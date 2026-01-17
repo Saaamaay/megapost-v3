@@ -21,7 +21,10 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          is_viral: boolean | null
+          performance_notes: string | null
           platform: string
+          rating: string | null
           user_id: string
         }
         Insert: {
@@ -30,7 +33,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          is_viral?: boolean | null
+          performance_notes?: string | null
           platform: string
+          rating?: string | null
           user_id: string
         }
         Update: {
@@ -39,7 +45,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          is_viral?: boolean | null
+          performance_notes?: string | null
           platform?: string
+          rating?: string | null
           user_id?: string
         }
         Relationships: []
