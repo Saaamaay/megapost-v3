@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "./ImageUpload";
 import { PlatformSelector, type Platform } from "./PlatformSelector";
 import { PostCard } from "./PostCard";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface VoiceProfile {
   business: string;
@@ -15,57 +17,6 @@ interface VoiceProfile {
 interface ContentGeneratorProps {
   voiceProfile: VoiceProfile;
 }
-
-// Simulated AI generation (replace with real API later)
-const generatePosts = async (
-  platforms: Platform[],
-  description: string,
-  profile: VoiceProfile
-): Promise<Record<Platform, string>> => {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  const posts: Record<string, string> = {};
-
-  if (platforms.includes("linkedin")) {
-    posts.linkedin = `Just wrapped up an incredible project that I'm truly proud of. 🏡
-
-${description}
-
-What started as a simple brief evolved into something meaningful—a space where families will make memories for generations.
-
-As architects, we don't just design buildings; we shape experiences. Every window placement, every material choice, tells a story.
-
-${profile.toneWords.includes("Thoughtful") ? "\nWould love to hear what projects have challenged you to think differently lately. 💭" : "\n#Architecture #Design #Sustainability"}`;
-  }
-
-  if (platforms.includes("instagram")) {
-    posts.instagram = `${description} ✨
-
-Sometimes the best designs come from the simplest ideas. This one's special to me. 
-
-#architecture #design #modernhome${profile.toneWords.includes("Friendly") ? " #lovewhatyoudo" : ""}`;
-  }
-
-  if (platforms.includes("facebook")) {
-    posts.facebook = `Excited to share our latest project! 🏠
-
-${description}
-
-It's been an amazing journey working with such a wonderful client. From concept to completion, every step reminded me why I love what I do.
-
-What do you think? Would love to hear your thoughts!`;
-  }
-
-  if (platforms.includes("twitter")) {
-    posts.twitter = `New project drop 🏡
-
-${description.slice(0, 100)}${description.length > 100 ? "..." : ""}
-
-Sometimes the best work speaks for itself.`;
-  }
-
-  return posts as Record<Platform, string>;
-};
 
 export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [image, setImage] = useState<string | null>(null);
@@ -89,10 +40,33 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     setPosts(null);
 
     try {
-      const generatedPosts = await generatePosts(platforms, description, voiceProfile);
-      setPosts(generatedPosts);
+      const { data, error } = await supabase.functions.invoke("generate-posts", {
+        body: {
+          platforms,
+          description,
+          voiceProfile,
+          imageBase64: image || undefined,
+        },
+      });
+
+      if (error) {
+        console.error("Edge function error:", error);
+        toast.error("Failed to generate posts. Please try again.");
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      if (data?.posts) {
+        setPosts(data.posts as Record<Platform, string>);
+        toast.success("Posts generated successfully!");
+      }
     } catch (error) {
       console.error("Failed to generate posts:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsGenerating(false);
     }
