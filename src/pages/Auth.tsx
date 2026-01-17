@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -95,38 +96,31 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-hero">
+      <NavBar />
+      
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
-      >
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6 gap-2"
+      <div className="flex items-center justify-center p-6 min-h-[calc(100vh-60px)]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md relative z-10"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to home
-        </Button>
-
-        <div className="bg-card rounded-3xl shadow-lg border border-border p-8">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8 justify-center">
-            <div className="p-2 rounded-xl bg-gradient-warm shadow-glow">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+          <div className="bg-card rounded-3xl shadow-lg border border-border p-8">
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8 justify-center">
+              <div className="p-2 rounded-xl bg-gradient-warm shadow-glow">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="font-display font-bold text-xl text-foreground">
+                PostPilot
+              </span>
             </div>
-            <span className="font-display font-bold text-xl text-foreground">
-              PostPilot
-            </span>
-          </div>
 
           {/* Header */}
           <div className="text-center mb-8">
@@ -208,7 +202,8 @@ export default function Auth() {
             </p>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

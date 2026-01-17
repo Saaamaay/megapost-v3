@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Palette, Clock, LogIn, LogOut, User, Settings } from "lucide-react";
+import { Sparkles, Zap, Palette, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
+import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -38,15 +39,12 @@ const Index = () => {
     setViewState("generator");
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    setLocalVoiceProfile(null);
-    setViewState("hero");
-    toast.success("Signed out successfully");
-  };
-
-  const handleEditProfile = () => {
-    setViewState("edit");
+  const handleNavigate = (view: "hero" | "generator" | "edit") => {
+    if (view === "generator" && !activeProfile) {
+      setViewState("setup");
+    } else {
+      setViewState(view);
+    }
   };
 
   const handleGetStarted = () => {
@@ -62,34 +60,23 @@ const Index = () => {
   // Edit profile view
   if (viewState === "edit" && activeProfile) {
     return (
-      <VoiceSetup
-        onComplete={(profile) => handleVoiceSetupComplete(profile, true)}
-        onCancel={() => setViewState("generator")}
-        initialProfile={activeProfile}
-        isEditing
-      />
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="edit" />
+        <VoiceSetup
+          onComplete={(profile) => handleVoiceSetupComplete(profile, true)}
+          onCancel={() => setViewState("generator")}
+          initialProfile={activeProfile}
+          isEditing
+        />
+      </div>
     );
   }
 
   // Show content generator if we have a profile
   if (viewState === "generator" && activeProfile) {
     return (
-      <div className="relative">
-        {/* Header with user menu */}
-        <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
-          {user && (
-            <>
-              <Button variant="outline" size="sm" onClick={handleEditProfile}>
-                <Settings className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </>
-          )}
-        </div>
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="generator" />
         <ContentGenerator voiceProfile={activeProfile} />
       </div>
     );
@@ -98,15 +85,8 @@ const Index = () => {
   // Show voice setup if user clicked get started
   if (viewState === "setup") {
     return (
-      <div className="relative">
-        {user && (
-          <div className="absolute top-6 right-6 z-20">
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        )}
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="setup" />
         <VoiceSetup onComplete={handleVoiceSetupComplete} />
       </div>
     );
@@ -114,43 +94,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero overflow-hidden">
+      <NavBar onNavigate={handleNavigate} currentView="hero" />
+
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
       </div>
-
-      {/* Header */}
-      <header className="relative z-10 px-6 py-6">
-        <nav className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-warm shadow-glow">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-xl text-foreground">PostPilot</span>
-          </div>
-          
-          {/* Auth buttons */}
-          <div className="flex items-center gap-3">
-            {loading ? null : user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground hidden sm:inline">
-                  {user.email}
-                </span>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => navigate("/auth")}>
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-            )}
-          </div>
-        </nav>
-      </header>
 
       {/* Hero */}
       <main className="relative z-10 max-w-6xl mx-auto px-6 pt-16 pb-24">
