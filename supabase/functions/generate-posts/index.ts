@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,12 @@ interface VoiceProfile {
   business: string;
   toneWords: string[];
   samplePost: string;
+}
+
+interface PerformanceData {
+  nailed_it_examples: string[];
+  not_my_voice_examples: string[];
+  viral_examples: string[];
 }
 
 interface RequestBody {
@@ -31,6 +38,60 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Get user's performance data to improve generation
+    let performanceContext = "";
+    const authHeader = req.headers.get("Authorization");
+    
+    if (authHeader) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+          global: { headers: { Authorization: authHeader } }
+        });
+
+        // Fetch recent rated posts for learning
+        const { data: ratedPosts } = await supabase
+          .from("generated_posts")
+          .select("content, rating, is_viral, platform")
+          .not("rating", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (ratedPosts && ratedPosts.length > 0) {
+          const performanceData: PerformanceData = {
+            nailed_it_examples: ratedPosts
+              .filter(p => p.rating === "nailed_it")
+              .slice(0, 5)
+              .map(p => `[${p.platform}]: ${p.content.substring(0, 200)}`),
+            not_my_voice_examples: ratedPosts
+              .filter(p => p.rating === "not_my_voice")
+              .slice(0, 3)
+              .map(p => `[${p.platform}]: ${p.content.substring(0, 150)}`),
+            viral_examples: ratedPosts
+              .filter(p => p.is_viral)
+              .slice(0, 3)
+              .map(p => `[${p.platform}]: ${p.content.substring(0, 200)}`),
+          };
+
+          if (performanceData.nailed_it_examples.length > 0) {
+            performanceContext += `\n\nPOSTS THAT NAILED THE VOICE (emulate this style):\n${performanceData.nailed_it_examples.join("\n")}`;
+          }
+          if (performanceData.not_my_voice_examples.length > 0) {
+            performanceContext += `\n\nPOSTS THAT MISSED THE MARK (avoid this style):\n${performanceData.not_my_voice_examples.join("\n")}`;
+          }
+          if (performanceData.viral_examples.length > 0) {
+            performanceContext += `\n\nHIGH-PERFORMING VIRAL POSTS (learn from these hooks and structures):\n${performanceData.viral_examples.join("\n")}`;
+          }
+        }
+        
+        console.log("Performance context loaded:", performanceContext.length > 0 ? "yes" : "no");
+      } catch (dbError) {
+        console.error("Failed to fetch performance data:", dbError);
+        // Continue without performance data
+      }
+    }
+
     const platformDescriptions: Record<string, string> = {
       linkedin: "Professional, warm, subtly personal. Focus on industry insight, the story behind the work, thoughtful reflection. Use 1-2 emojis max. Include a call to engagement at the end.",
       instagram: "Visual-first, breezy, emoji-friendly. Short caption (2-4 sentences) that complements the image. Use relevant hashtags (5-8). Keep it punchy and authentic.",
@@ -44,6 +105,7 @@ USER'S VOICE PROFILE:
 - Business: ${voiceProfile.business}
 - Tone words: ${voiceProfile.toneWords.join(", ")}
 ${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
+${performanceContext}
 
 IMPORTANT RULES:
 1. Write in the user's authentic voice based on their profile
@@ -51,6 +113,7 @@ IMPORTANT RULES:
 3. Never use generic AI-sounding phrases
 4. Make posts feel personal and genuine
 5. Adapt length and style for each platform
+${performanceContext ? "6. Pay close attention to the performance feedback above - emulate what worked, avoid what didn't" : ""}
 
 Return a JSON object with keys for each requested platform and the post content as values.
 ONLY return valid JSON, no markdown, no explanation.`;

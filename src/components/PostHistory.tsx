@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { History, Trash2, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { History, Trash2, Copy, Check, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,8 @@ interface SavedPost {
   content: string;
   description: string | null;
   created_at: string;
+  rating: string | null;
+  is_viral: boolean | null;
 }
 
 const platformColors: Record<string, string> = {
@@ -56,6 +58,11 @@ export function PostHistory() {
 
   useEffect(() => {
     fetchPosts();
+    
+    // Listen for refresh events
+    const handleRefresh = () => fetchPosts();
+    window.addEventListener("refresh-post-history", handleRefresh);
+    return () => window.removeEventListener("refresh-post-history", handleRefresh);
   }, [user]);
 
   const handleCopy = async (post: SavedPost) => {
@@ -76,6 +83,46 @@ export function PostHistory() {
     } else {
       setPosts(posts.filter(p => p.id !== postId));
       toast.success("Post deleted");
+    }
+  };
+
+  const handleRate = async (postId: string, rating: 'nailed_it' | 'not_my_voice') => {
+    const post = posts.find(p => p.id === postId);
+    const newRating = post?.rating === rating ? null : rating;
+    
+    const { error } = await supabase
+      .from("generated_posts")
+      .update({ rating: newRating })
+      .eq("id", postId);
+
+    if (error) {
+      toast.error("Failed to update rating");
+    } else {
+      setPosts(posts.map(p => p.id === postId ? { ...p, rating: newRating } : p));
+      if (newRating === 'nailed_it') {
+        toast.success("Thanks! We'll learn from this ✨");
+      } else if (newRating === 'not_my_voice') {
+        toast.success("Noted! We'll adjust your voice");
+      }
+    }
+  };
+
+  const handleViralToggle = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    const newValue = !post?.is_viral;
+    
+    const { error } = await supabase
+      .from("generated_posts")
+      .update({ is_viral: newValue })
+      .eq("id", postId);
+
+    if (error) {
+      toast.error("Failed to update");
+    } else {
+      setPosts(posts.map(p => p.id === postId ? { ...p, is_viral: newValue } : p));
+      if (newValue) {
+        toast.success("Marked as high performer! 🔥");
+      }
     }
   };
 
@@ -124,14 +171,26 @@ export function PostHistory() {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-4 space-y-3 max-h-80 overflow-y-auto">
+            <div className="px-6 pb-4 space-y-3 max-h-96 overflow-y-auto">
               {posts.map((post) => (
                 <motion.div
                   key={post.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl bg-muted/30 border border-border/50 group"
+                  className={cn(
+                    "p-4 rounded-xl bg-muted/30 border group relative",
+                    post.is_viral 
+                      ? "border-orange-400/50 bg-orange-500/5" 
+                      : "border-border/50"
+                  )}
                 >
+                  {/* Viral badge */}
+                  {post.is_viral && (
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Flame className="w-3 h-3" /> Top Performer
+                    </div>
+                  )}
+                  
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
@@ -141,12 +200,73 @@ export function PostHistory() {
                         <span className="text-xs text-muted-foreground">
                           {formatDate(post.created_at)}
                         </span>
+                        {post.rating === 'nailed_it' && (
+                          <span className="text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full">
+                            ✓ Nailed it
+                          </span>
+                        )}
+                        {post.rating === 'not_my_voice' && (
+                          <span className="text-xs bg-amber-500/20 text-amber-600 px-2 py-0.5 rounded-full">
+                            Needs work
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-foreground/80 line-clamp-2">
                         {post.content}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  </div>
+                  
+                  {/* Action buttons - always visible on mobile, hover on desktop */}
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                    {/* Rating buttons */}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRate(post.id, 'nailed_it')}
+                        className={cn(
+                          "h-8 px-3 text-xs gap-1.5",
+                          post.rating === 'nailed_it' 
+                            ? "bg-green-500/20 text-green-600 hover:bg-green-500/30" 
+                            : "hover:bg-green-500/10 hover:text-green-600"
+                        )}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                        Nailed it
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRate(post.id, 'not_my_voice')}
+                        className={cn(
+                          "h-8 px-3 text-xs gap-1.5",
+                          post.rating === 'not_my_voice' 
+                            ? "bg-amber-500/20 text-amber-600 hover:bg-amber-500/30" 
+                            : "hover:bg-amber-500/10 hover:text-amber-600"
+                        )}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                        Not my voice
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViralToggle(post.id)}
+                        className={cn(
+                          "h-8 px-3 text-xs gap-1.5",
+                          post.is_viral 
+                            ? "bg-orange-500/20 text-orange-600 hover:bg-orange-500/30" 
+                            : "hover:bg-orange-500/10 hover:text-orange-600"
+                        )}
+                      >
+                        <Flame className="w-3.5 h-3.5" />
+                        {post.is_viral ? "Top Performer" : "Mark as hit"}
+                      </Button>
+                    </div>
+                    
+                    {/* Utility buttons */}
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
