@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Palette, Clock } from "lucide-react";
+import { Sparkles, Zap, Palette, Clock, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface VoiceProfile {
   business: string;
@@ -13,15 +16,83 @@ interface VoiceProfile {
 
 const Index = () => {
   const [showHero, setShowHero] = useState(true);
-  const [voiceProfile, setVoiceProfile] = useState<VoiceProfile | null>(null);
+  const [localVoiceProfile, setLocalVoiceProfile] = useState<VoiceProfile | null>(null);
+  const { user, loading, voiceProfile, signOut, saveVoiceProfile } = useAuth();
+  const navigate = useNavigate();
 
-  // Show hero -> setup -> generator flow
-  if (voiceProfile) {
-    return <ContentGenerator voiceProfile={voiceProfile} />;
+  // Use saved profile if available
+  const activeProfile = voiceProfile || localVoiceProfile;
+
+  const handleVoiceSetupComplete = async (profile: VoiceProfile) => {
+    if (user) {
+      const { error } = await saveVoiceProfile(profile);
+      if (error) {
+        toast.error("Failed to save voice profile");
+      } else {
+        toast.success("Voice profile saved!");
+      }
+    }
+    setLocalVoiceProfile(profile);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setLocalVoiceProfile(null);
+    setShowHero(true);
+    toast.success("Signed out successfully");
+  };
+
+  const handleGetStarted = () => {
+    if (user && voiceProfile) {
+      // User has saved profile, go directly to generator
+      setShowHero(false);
+    } else if (user) {
+      // User is logged in but no profile, go to setup
+      setShowHero(false);
+    } else {
+      // Not logged in, redirect to auth
+      navigate("/auth");
+    }
+  };
+
+  // Show content generator if we have a profile
+  if (activeProfile && !showHero) {
+    return (
+      <div className="relative">
+        {/* Header with user menu */}
+        <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
+          {user && (
+            <>
+              <span className="text-sm text-muted-foreground hidden sm:inline">
+                {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </>
+          )}
+        </div>
+        <ContentGenerator voiceProfile={activeProfile} />
+      </div>
+    );
   }
 
+  // Show voice setup if user clicked get started
   if (!showHero) {
-    return <VoiceSetup onComplete={setVoiceProfile} />;
+    return (
+      <div className="relative">
+        {user && (
+          <div className="absolute top-6 right-6 z-20">
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        )}
+        <VoiceSetup onComplete={handleVoiceSetupComplete} />
+      </div>
+    );
   }
 
   return (
@@ -40,6 +111,26 @@ const Index = () => {
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-xl text-foreground">PostPilot</span>
+          </div>
+          
+          {/* Auth buttons */}
+          <div className="flex items-center gap-3">
+            {loading ? null : user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => navigate("/auth")}>
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
           </div>
         </nav>
       </header>
@@ -87,13 +178,25 @@ const Index = () => {
             <Button
               variant="hero"
               size="xl"
-              onClick={() => setShowHero(false)}
+              onClick={handleGetStarted}
               className="text-lg"
             >
               <Sparkles className="w-5 h-5" />
-              Get Started Free
+              {user && voiceProfile ? "Start Creating" : "Get Started Free"}
             </Button>
           </motion.div>
+
+          {user && voiceProfile && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mt-4 text-sm text-muted-foreground"
+            >
+              <User className="w-4 h-4 inline mr-1" />
+              Your voice profile is ready
+            </motion.p>
+          )}
         </div>
 
         {/* Features */}
