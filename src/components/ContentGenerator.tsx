@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "./ImageUpload";
 import { PlatformSelector, type Platform } from "./PlatformSelector";
 import { PostCard } from "./PostCard";
+import { PostHistory } from "./PostHistory";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface VoiceProfile {
@@ -24,6 +26,8 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [posts, setPosts] = useState<Record<Platform, string> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0);
+  const { user } = useAuth();
 
   const togglePlatform = (platform: Platform) => {
     setPlatforms((prev) =>
@@ -31,6 +35,26 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         ? prev.filter((p) => p !== platform)
         : [...prev, platform]
     );
+  };
+
+  const savePosts = async (generatedPosts: Record<Platform, string>, desc: string) => {
+    if (!user) return;
+
+    const postsToSave = Object.entries(generatedPosts).map(([platform, content]) => ({
+      user_id: user.id,
+      platform,
+      content,
+      description: desc,
+    }));
+
+    const { error } = await supabase.from("generated_posts").insert(postsToSave);
+
+    if (error) {
+      console.error("Failed to save posts:", error);
+    } else {
+      // Trigger history refresh
+      setHistoryKey(prev => prev + 1);
+    }
   };
 
   const handleGenerate = async () => {
@@ -61,8 +85,12 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
       }
 
       if (data?.posts) {
-        setPosts(data.posts as Record<Platform, string>);
+        const generatedPosts = data.posts as Record<Platform, string>;
+        setPosts(generatedPosts);
         toast.success("Posts generated successfully!");
+        
+        // Auto-save to history
+        await savePosts(generatedPosts, description);
       }
     } catch (error) {
       console.error("Failed to generate posts:", error);
@@ -181,6 +209,9 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Post History */}
+          <PostHistory key={historyKey} />
         </motion.div>
       </main>
     </div>
