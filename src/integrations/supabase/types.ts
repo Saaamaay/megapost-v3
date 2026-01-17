@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      voice_profiles: {
+        Row: {
+          business_description: string | null
+          created_at: string
+          example_post: string | null
+          id: string
+          tone_words: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_description?: string | null
+          created_at?: string
+          example_post?: string | null
+          id?: string
+          tone_words?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_description?: string | null
+          created_at?: string
+          example_post?: string | null
+          id?: string
+          tone_words?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
