@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Palette, Clock, LogIn, LogOut, User } from "lucide-react";
+import { Sparkles, Zap, Palette, Clock, LogIn, LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
@@ -14,8 +14,10 @@ interface VoiceProfile {
   samplePost: string;
 }
 
+type ViewState = "hero" | "setup" | "generator" | "edit";
+
 const Index = () => {
-  const [showHero, setShowHero] = useState(true);
+  const [viewState, setViewState] = useState<ViewState>("hero");
   const [localVoiceProfile, setLocalVoiceProfile] = useState<VoiceProfile | null>(null);
   const { user, loading, voiceProfile, signOut, saveVoiceProfile } = useAuth();
   const navigate = useNavigate();
@@ -23,49 +25,64 @@ const Index = () => {
   // Use saved profile if available
   const activeProfile = voiceProfile || localVoiceProfile;
 
-  const handleVoiceSetupComplete = async (profile: VoiceProfile) => {
+  const handleVoiceSetupComplete = async (profile: VoiceProfile, isEdit = false) => {
     if (user) {
       const { error } = await saveVoiceProfile(profile);
       if (error) {
         toast.error("Failed to save voice profile");
       } else {
-        toast.success("Voice profile saved!");
+        toast.success(isEdit ? "Voice profile updated!" : "Voice profile saved!");
       }
     }
     setLocalVoiceProfile(profile);
+    setViewState("generator");
   };
 
   const handleSignOut = async () => {
     await signOut();
     setLocalVoiceProfile(null);
-    setShowHero(true);
+    setViewState("hero");
     toast.success("Signed out successfully");
+  };
+
+  const handleEditProfile = () => {
+    setViewState("edit");
   };
 
   const handleGetStarted = () => {
     if (user && voiceProfile) {
-      // User has saved profile, go directly to generator
-      setShowHero(false);
+      setViewState("generator");
     } else if (user) {
-      // User is logged in but no profile, go to setup
-      setShowHero(false);
+      setViewState("setup");
     } else {
-      // Not logged in, redirect to auth
       navigate("/auth");
     }
   };
 
+  // Edit profile view
+  if (viewState === "edit" && activeProfile) {
+    return (
+      <VoiceSetup
+        onComplete={(profile) => handleVoiceSetupComplete(profile, true)}
+        onCancel={() => setViewState("generator")}
+        initialProfile={activeProfile}
+        isEditing
+      />
+    );
+  }
+
   // Show content generator if we have a profile
-  if (activeProfile && !showHero) {
+  if (viewState === "generator" && activeProfile) {
     return (
       <div className="relative">
         {/* Header with user menu */}
         <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
           {user && (
             <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                {user.email}
-              </span>
+              <Button variant="outline" size="sm" onClick={handleEditProfile}>
+                <Settings className="w-4 h-4 mr-2" />
+                Edit Profile
+              </Button>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
@@ -79,7 +96,7 @@ const Index = () => {
   }
 
   // Show voice setup if user clicked get started
-  if (!showHero) {
+  if (viewState === "setup") {
     return (
       <div className="relative">
         {user && (
