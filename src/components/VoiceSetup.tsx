@@ -12,6 +12,9 @@ interface VoiceProfile {
 
 interface VoiceSetupProps {
   onComplete: (profile: VoiceProfile) => void;
+  onCancel?: () => void;
+  initialProfile?: VoiceProfile | null;
+  isEditing?: boolean;
 }
 
 const toneOptions = [
@@ -20,12 +23,12 @@ const toneOptions = [
   "Confident", "Thoughtful", "Energetic", "Casual"
 ];
 
-export function VoiceSetup({ onComplete }: VoiceSetupProps) {
+export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: VoiceSetupProps) {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<VoiceProfile>({
-    business: "",
-    toneWords: [],
-    samplePost: "",
+    business: initialProfile?.business || "",
+    toneWords: initialProfile?.toneWords || [],
+    samplePost: initialProfile?.samplePost || "",
   });
 
   const steps = [
@@ -196,15 +199,22 @@ export function VoiceSetup({ onComplete }: VoiceSetupProps) {
 
           {/* Navigation */}
           <div className="flex justify-between mt-8">
-            <Button
-              variant="ghost"
-              onClick={() => setStep(step - 1)}
-              disabled={step === 0}
-              className="gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
+            {step === 0 && onCancel ? (
+              <Button variant="ghost" onClick={onCancel} className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Cancel
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => setStep(step - 1)}
+                disabled={step === 0}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            )}
             <Button
               variant="hero"
               onClick={handleNext}
@@ -214,7 +224,7 @@ export function VoiceSetup({ onComplete }: VoiceSetupProps) {
               {step === 2 ? (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Start Creating
+                  {isEditing ? "Save Changes" : "Start Creating"}
                 </>
               ) : (
                 <>
