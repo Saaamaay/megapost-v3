@@ -85,7 +85,7 @@ export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6">
+    <div className="flex items-center justify-center p-6 min-h-[calc(100vh-60px)]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
