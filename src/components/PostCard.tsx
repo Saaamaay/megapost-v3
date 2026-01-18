@@ -3,10 +3,12 @@ import { Copy, Check, Linkedin, Instagram, Facebook, Twitter } from "lucide-reac
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Platform } from "./PlatformSelector";
+import { Badge } from "@/components/ui/badge";
 
-interface PostCardProps {
+export interface PostCardProps {
   platform: Platform;
   content: string;
+  format?: string;
   index: number;
 }
 
@@ -41,7 +43,7 @@ const platformConfig = {
   },
 };
 
-export function PostCard({ platform, content, index }: PostCardProps) {
+export function PostCard({ platform, content, format, index }: PostCardProps) {
   const [copied, setCopied] = useState(false);
   const config = platformConfig[platform];
   const Icon = config.icon;
@@ -69,6 +71,11 @@ export function PostCard({ platform, content, index }: PostCardProps) {
             <Icon className="w-5 h-5" />
           </div>
           <span className="font-semibold text-foreground">{config.name}</span>
+          {format && (
+            <Badge variant="secondary" className="text-xs capitalize">
+              {format.replace("_", " ")}
+            </Badge>
+          )}
         </div>
         <motion.button
           onClick={handleCopy}
