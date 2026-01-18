@@ -2,10 +2,20 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ToneScales {
+  casualProfessional: number;
+  funnySincere: number;
+  personalFormal: number;
+  groundedInspiring: number;
+}
+
 interface VoiceProfile {
   id: string;
   business: string;
-  toneWords: string[];
+  businessLocation: string;
+  employeeCount: string;
+  businessType: string;
+  toneScales: ToneScales;
   samplePost: string;
 }
 
@@ -40,7 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setVoiceProfile({
         id: data.id,
         business: data.business_description || "",
-        toneWords: data.tone_words || [],
+        businessLocation: data.business_location || "",
+        employeeCount: data.employee_count || "",
+        businessType: data.business_type || "",
+        toneScales: {
+          casualProfessional: data.tone_casual_professional ?? 3,
+          funnySincere: data.tone_funny_sincere ?? 3,
+          personalFormal: data.tone_personal_formal ?? 3,
+          groundedInspiring: data.tone_grounded_inspiring ?? 3,
+        },
         samplePost: data.example_post || "",
       });
     } else {
@@ -113,7 +131,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {
         user_id: user.id,
         business_description: profile.business,
-        tone_words: profile.toneWords,
+        business_location: profile.businessLocation,
+        employee_count: profile.employeeCount,
+        business_type: profile.businessType,
+        tone_casual_professional: profile.toneScales.casualProfessional,
+        tone_funny_sincere: profile.toneScales.funnySincere,
+        tone_personal_formal: profile.toneScales.personalFormal,
+        tone_grounded_inspiring: profile.toneScales.groundedInspiring,
         example_post: profile.samplePost,
       },
       { onConflict: "user_id" }

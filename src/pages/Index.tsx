@@ -9,9 +9,19 @@ import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+interface ToneScales {
+  casualProfessional: number;
+  funnySincere: number;
+  personalFormal: number;
+  groundedInspiring: number;
+}
+
 interface VoiceProfile {
   business: string;
-  toneWords: string[];
+  businessLocation: string;
+  employeeCount: string;
+  businessType: string;
+  toneScales: ToneScales;
   samplePost: string;
 }
 

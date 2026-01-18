@@ -11,9 +11,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+interface ToneScales {
+  casualProfessional: number;
+  funnySincere: number;
+  personalFormal: number;
+  groundedInspiring: number;
+}
+
 interface VoiceProfile {
   business: string;
-  toneWords: string[];
+  businessLocation: string;
+  employeeCount: string;
+  businessType: string;
+  toneScales: ToneScales;
   samplePost: string;
 }
 
@@ -122,7 +132,9 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         {/* Voice indicator */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Lightbulb className="w-4 h-4" />
-          <span>Writing in your voice: <span className="text-foreground font-medium">{voiceProfile.toneWords.join(", ")}</span></span>
+          <span>Writing in your voice: <span className="text-foreground font-medium">
+            {voiceProfile.toneScales.casualProfessional <= 2 ? "Casual" : voiceProfile.toneScales.casualProfessional >= 4 ? "Professional" : "Balanced"}, {voiceProfile.businessType || "Business"}
+          </span></span>
         </div>
 
         {/* Input Section */}
