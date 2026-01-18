@@ -148,19 +148,24 @@ serve(async (req) => {
     // Build format instructions based on mode
     let formatInstructions = "";
     if (useSmartFormats) {
-      formatInstructions = `\n\nFORMAT SELECTION:
-For each platform, analyze the content and pick the BEST format from these options:
+      formatInstructions = `\n\nFORMAT SELECTION - CRITICAL:
+Analyze the CONTENT TYPE and pick the format that best communicates it. Don't default to complex formats.
 
+Available formats:
 ${platforms.map(p => {
   const formats = platformFormats[p] || [];
   return `${p.toUpperCase()}:\n${formats.map(f => `  - "${f.name}": ${f.description}`).join("\n")}`;
 }).join("\n\n")}
 
-Choose the format that best fits the content. For example:
-- Step-by-step or educational content → carousel or thread
-- Personal story or experience → story_post
-- Quick announcement or thought → standard or hook_tweet
-- Tutorial or tips → carousel or reel_script`;
+FORMAT MATCHING GUIDE:
+📢 ANNOUNCEMENTS (new hire, news, updates, launches) → "standard" - simple, direct, celebratory
+📚 EDUCATIONAL (how-to, tips, lessons, guides) → "carousel" or "thread" - needs structure
+📖 STORIES (personal experiences, journey, behind-scenes) → "story_post" - narrative arc
+💡 INSIGHTS (opinions, hot takes, reflections) → "insight" or "hook_tweet" - provocative hook
+❓ ENGAGEMENT (polls, discussions, community) → "question_post" - invites response
+
+CRITICAL: A team announcement or new hire post is NOT a carousel. It's a simple celebratory update - use "standard".
+Carousels are for content that has MULTIPLE DISTINCT POINTS that need separate slides.`;
     }
 
     // Helper to describe tone scales
