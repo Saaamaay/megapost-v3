@@ -56,27 +56,48 @@ export type Database = {
       voice_profiles: {
         Row: {
           business_description: string | null
+          business_location: string | null
+          business_type: string | null
           created_at: string
+          employee_count: string | null
           example_post: string | null
           id: string
+          tone_casual_professional: number | null
+          tone_funny_sincere: number | null
+          tone_grounded_inspiring: number | null
+          tone_personal_formal: number | null
           tone_words: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
           business_description?: string | null
+          business_location?: string | null
+          business_type?: string | null
           created_at?: string
+          employee_count?: string | null
           example_post?: string | null
           id?: string
+          tone_casual_professional?: number | null
+          tone_funny_sincere?: number | null
+          tone_grounded_inspiring?: number | null
+          tone_personal_formal?: number | null
           tone_words?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
           business_description?: string | null
+          business_location?: string | null
+          business_type?: string | null
           created_at?: string
+          employee_count?: string | null
           example_post?: string | null
           id?: string
+          tone_casual_professional?: number | null
+          tone_funny_sincere?: number | null
+          tone_grounded_inspiring?: number | null
+          tone_personal_formal?: number | null
           tone_words?: string[] | null
           updated_at?: string
           user_id?: string

@@ -6,9 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ToneScales {
+  casualProfessional: number;
+  funnySincere: number;
+  personalFormal: number;
+  groundedInspiring: number;
+}
+
 interface VoiceProfile {
   business: string;
-  toneWords: string[];
+  businessLocation: string;
+  employeeCount: string;
+  businessType: string;
+  toneScales: ToneScales;
   samplePost: string;
 }
 
@@ -143,11 +153,28 @@ Choose the format that best fits the content. For example:
 - Tutorial or tips → carousel or reel_script`;
     }
 
+    // Helper to describe tone scales
+    const describeTone = (scale: number, left: string, right: string) => {
+      if (scale <= 2) return left;
+      if (scale >= 4) return right;
+      return `balanced ${left.toLowerCase()}/${right.toLowerCase()}`;
+    };
+
+    const toneDescription = [
+      describeTone(voiceProfile.toneScales.casualProfessional, "Casual", "Professional"),
+      describeTone(voiceProfile.toneScales.funnySincere, "Funny", "Sincere"),
+      describeTone(voiceProfile.toneScales.personalFormal, "Personal", "Formal"),
+      describeTone(voiceProfile.toneScales.groundedInspiring, "Down-to-earth", "Inspiring"),
+    ].join(", ");
+
     const systemPrompt = `You are an expert social media copywriter. Your job is to create platform-specific posts that sound authentic to the user's voice.
 
 USER'S VOICE PROFILE:
 - Business: ${voiceProfile.business}
-- Tone words: ${voiceProfile.toneWords.join(", ")}
+${voiceProfile.businessLocation ? `- Location: ${voiceProfile.businessLocation}` : ""}
+${voiceProfile.businessType ? `- Business type: ${voiceProfile.businessType}` : ""}
+${voiceProfile.employeeCount ? `- Team size: ${voiceProfile.employeeCount}` : ""}
+- Tone: ${toneDescription}
 ${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
 ${performanceContext}
 ${formatInstructions}
