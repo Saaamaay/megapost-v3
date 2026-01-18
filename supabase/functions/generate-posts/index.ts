@@ -22,11 +22,6 @@ interface VoiceProfile {
   samplePost: string;
 }
 
-interface PerformanceData {
-  nailed_it_examples: string[];
-  not_my_voice_examples: string[];
-  viral_examples: string[];
-}
 
 interface RequestBody {
   platforms: string[];
@@ -74,8 +69,8 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Get user's performance data to improve generation
-    let performanceContext = "";
+    // Get user's performance data to improve generation - PLATFORM SPECIFIC
+    const platformPerformance: Record<string, string> = {};
     const authHeader = req.headers.get("Authorization");
     
     if (authHeader) {
@@ -86,47 +81,62 @@ serve(async (req) => {
           global: { headers: { Authorization: authHeader } }
         });
 
-        // Fetch recent rated posts for learning
+        // Fetch recent rated posts for learning - get more to have enough per platform
         const { data: ratedPosts } = await supabase
           .from("generated_posts")
           .select("content, rating, is_viral, platform")
           .not("rating", "is", null)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(50);
 
         if (ratedPosts && ratedPosts.length > 0) {
-          const performanceData: PerformanceData = {
-            nailed_it_examples: ratedPosts
+          // Build platform-specific performance context
+          for (const platform of platforms) {
+            const platformPosts = ratedPosts.filter(p => p.platform === platform);
+            
+            if (platformPosts.length === 0) continue;
+            
+            let context = "";
+            
+            const nailedIt = platformPosts
               .filter(p => p.rating === "nailed_it")
-              .slice(0, 5)
-              .map(p => `[${p.platform}]: ${p.content.substring(0, 200)}`),
-            not_my_voice_examples: ratedPosts
+              .slice(0, 3)
+              .map(p => p.content.substring(0, 200));
+            
+            const notMyVoice = platformPosts
               .filter(p => p.rating === "not_my_voice")
-              .slice(0, 3)
-              .map(p => `[${p.platform}]: ${p.content.substring(0, 150)}`),
-            viral_examples: ratedPosts
+              .slice(0, 2)
+              .map(p => p.content.substring(0, 150));
+            
+            const viral = platformPosts
               .filter(p => p.is_viral)
-              .slice(0, 3)
-              .map(p => `[${p.platform}]: ${p.content.substring(0, 200)}`),
-          };
-
-          if (performanceData.nailed_it_examples.length > 0) {
-            performanceContext += `\n\nPOSTS THAT NAILED THE VOICE (emulate this style):\n${performanceData.nailed_it_examples.join("\n")}`;
-          }
-          if (performanceData.not_my_voice_examples.length > 0) {
-            performanceContext += `\n\nPOSTS THAT MISSED THE MARK (avoid this style):\n${performanceData.not_my_voice_examples.join("\n")}`;
-          }
-          if (performanceData.viral_examples.length > 0) {
-            performanceContext += `\n\nHIGH-PERFORMING VIRAL POSTS (learn from these hooks and structures):\n${performanceData.viral_examples.join("\n")}`;
+              .slice(0, 2)
+              .map(p => p.content.substring(0, 200));
+            
+            if (nailedIt.length > 0) {
+              context += `\n  ✓ STYLE TO EMULATE (these nailed your voice):\n${nailedIt.map(c => `    "${c}..."`).join("\n")}`;
+            }
+            if (notMyVoice.length > 0) {
+              context += `\n  ✗ STYLE TO AVOID (these missed the mark):\n${notMyVoice.map(c => `    "${c}..."`).join("\n")}`;
+            }
+            if (viral.length > 0) {
+              context += `\n  ⭐ HIGH PERFORMERS (learn from these hooks):\n${viral.map(c => `    "${c}..."`).join("\n")}`;
+            }
+            
+            if (context) {
+              platformPerformance[platform] = context;
+            }
           }
         }
         
-        console.log("Performance context loaded:", performanceContext.length > 0 ? "yes" : "no");
+        console.log("Platform-specific performance loaded for:", Object.keys(platformPerformance).join(", ") || "none");
       } catch (dbError) {
         console.error("Failed to fetch performance data:", dbError);
         // Continue without performance data
       }
     }
+    
+    const hasPerformanceData = Object.keys(platformPerformance).length > 0;
 
     const platformDescriptions: Record<string, string> = {
       linkedin: "Professional, warm, subtly personal. Focus on industry insight, the story behind the work, thoughtful reflection. Use 1-2 emojis max. Include a call to engagement at the end.",
@@ -167,6 +177,17 @@ Choose the format that best fits the content. For example:
       describeTone(voiceProfile.toneScales.groundedInspiring, "Down-to-earth", "Inspiring"),
     ].join(", ");
 
+    // Build platform-specific performance section
+    let performanceSection = "";
+    if (hasPerformanceData) {
+      performanceSection = `\n\nPLATFORM-SPECIFIC LEARNING (use to match tone/style, NOT to limit format choices):
+${Object.entries(platformPerformance).map(([platform, context]) => 
+  `\n${platform.toUpperCase()}:${context}`
+).join("\n")}
+
+IMPORTANT: This learning is about VOICE and STYLE, not format. Still pick the best format for the current content - don't just repeat the same format because it worked before.`;
+    }
+
     const systemPrompt = `You are an expert social media copywriter. Your job is to create platform-specific posts that sound authentic to the user's voice.
 
 USER'S VOICE PROFILE:
@@ -176,7 +197,7 @@ ${voiceProfile.businessType ? `- Business type: ${voiceProfile.businessType}` : 
 ${voiceProfile.employeeCount ? `- Team size: ${voiceProfile.employeeCount}` : ""}
 - Tone: ${toneDescription}
 ${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
-${performanceContext}
+${performanceSection}
 ${formatInstructions}
 
 IMPORTANT RULES:
@@ -185,8 +206,8 @@ IMPORTANT RULES:
 3. Never use generic AI-sounding phrases
 4. Make posts feel personal and genuine
 5. Adapt length and style for each platform
-${performanceContext ? "6. Pay close attention to the performance feedback above - emulate what worked, avoid what didn't" : ""}
-${useSmartFormats ? "7. Pick the most suitable format for the content and structure the post accordingly" : ""}
+${hasPerformanceData ? "6. Learn tone/hooks from past successes on EACH platform, but vary your format choices based on the current content" : ""}
+${useSmartFormats ? `${hasPerformanceData ? "7" : "6"}. Pick the most suitable format for THIS content - don't default to the same format every time` : ""}
 
 Return a JSON object with this structure:
 {
