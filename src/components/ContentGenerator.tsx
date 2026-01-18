@@ -6,6 +6,7 @@ import { ImageUpload } from "./ImageUpload";
 import { PlatformSelector, type Platform } from "./PlatformSelector";
 import { PostCard } from "./PostCard";
 import { PostHistory } from "./PostHistory";
+import { FormatModeToggle } from "./FormatModeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,8 +26,10 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [description, setDescription] = useState("");
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [posts, setPosts] = useState<Record<Platform, string> | null>(null);
+  const [formats, setFormats] = useState<Record<Platform, string> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [historyKey, setHistoryKey] = useState(0);
+  const [useFreeForm, setUseFreeForm] = useState(false);
   const { user } = useAuth();
 
   const togglePlatform = (platform: Platform) => {
@@ -70,6 +73,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           description,
           voiceProfile,
           imageBase64: image || undefined,
+          useSmartFormats: !useFreeForm,
         },
       });
 
@@ -87,6 +91,12 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
       if (data?.posts) {
         const generatedPosts = data.posts as Record<Platform, string>;
         setPosts(generatedPosts);
+        
+        // Store format info if available
+        if (data?.formats) {
+          setFormats(data.formats as Record<Platform, string>);
+        }
+        
         toast.success("Posts generated successfully!");
         
         // Auto-save to history
@@ -140,11 +150,28 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
-              Where should we post?
-            </label>
-            <PlatformSelector selected={platforms} onToggle={togglePlatform} />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-3">
+                Where should we post?
+              </label>
+              <PlatformSelector selected={platforms} onToggle={togglePlatform} />
+            </div>
+            
+            {platforms.length > 0 && (
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                <div className="text-sm text-muted-foreground">
+                  {useFreeForm 
+                    ? "Free-form: Standard post format" 
+                    : "Smart: AI picks the best format (thread, carousel, etc.) for each platform"
+                  }
+                </div>
+                <FormatModeToggle 
+                  useFreeForm={useFreeForm} 
+                  onToggle={() => setUseFreeForm(!useFreeForm)} 
+                />
+              </div>
+            )}
           </div>
 
           <Button
@@ -191,6 +218,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                     key={platform}
                     platform={platform}
                     content={posts[platform]}
+                    format={formats?.[platform]}
                     index={index}
                   />
                 ))}

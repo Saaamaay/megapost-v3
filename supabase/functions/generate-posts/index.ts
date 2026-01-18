@@ -23,7 +23,33 @@ interface RequestBody {
   description: string;
   voiceProfile: VoiceProfile;
   imageBase64?: string;
+  useSmartFormats?: boolean;
 }
+
+// Format definitions per platform
+const platformFormats: Record<string, { name: string; description: string }[]> = {
+  linkedin: [
+    { name: "carousel", description: "Numbered slides (1/, 2/, etc.) for educational or step-by-step content" },
+    { name: "story_post", description: "Personal story with a business lesson" },
+    { name: "insight", description: "Industry insight or hot take with reflection" },
+    { name: "standard", description: "Regular professional post" },
+  ],
+  instagram: [
+    { name: "carousel", description: "Slide-by-slide caption (Slide 1:, Slide 2:, etc.) for tips or tutorials" },
+    { name: "reel_script", description: "Hook + quick talking points for a short video" },
+    { name: "caption", description: "Standard photo caption with hashtags" },
+  ],
+  twitter: [
+    { name: "thread", description: "Multi-tweet thread (1/, 2/, etc.) for detailed breakdowns" },
+    { name: "hook_tweet", description: "Single punchy tweet with a strong hook" },
+    { name: "standard", description: "Regular tweet under 280 chars" },
+  ],
+  facebook: [
+    { name: "story_post", description: "Conversational story that invites engagement" },
+    { name: "question_post", description: "Post centered around asking the community a question" },
+    { name: "standard", description: "Regular community-focused update" },
+  ],
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,7 +57,7 @@ serve(async (req) => {
   }
 
   try {
-    const { platforms, description, voiceProfile, imageBase64 }: RequestBody = await req.json();
+    const { platforms, description, voiceProfile, imageBase64, useSmartFormats = true }: RequestBody = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -99,6 +125,24 @@ serve(async (req) => {
       twitter: "Punchy, concise. One sharp thought, maybe a hook. Under 280 characters. Can include 1-2 hashtags max."
     };
 
+    // Build format instructions based on mode
+    let formatInstructions = "";
+    if (useSmartFormats) {
+      formatInstructions = `\n\nFORMAT SELECTION:
+For each platform, analyze the content and pick the BEST format from these options:
+
+${platforms.map(p => {
+  const formats = platformFormats[p] || [];
+  return `${p.toUpperCase()}:\n${formats.map(f => `  - "${f.name}": ${f.description}`).join("\n")}`;
+}).join("\n\n")}
+
+Choose the format that best fits the content. For example:
+- Step-by-step or educational content → carousel or thread
+- Personal story or experience → story_post
+- Quick announcement or thought → standard or hook_tweet
+- Tutorial or tips → carousel or reel_script`;
+    }
+
     const systemPrompt = `You are an expert social media copywriter. Your job is to create platform-specific posts that sound authentic to the user's voice.
 
 USER'S VOICE PROFILE:
@@ -106,6 +150,7 @@ USER'S VOICE PROFILE:
 - Tone words: ${voiceProfile.toneWords.join(", ")}
 ${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
 ${performanceContext}
+${formatInstructions}
 
 IMPORTANT RULES:
 1. Write in the user's authentic voice based on their profile
@@ -114,8 +159,14 @@ IMPORTANT RULES:
 4. Make posts feel personal and genuine
 5. Adapt length and style for each platform
 ${performanceContext ? "6. Pay close attention to the performance feedback above - emulate what worked, avoid what didn't" : ""}
+${useSmartFormats ? "7. Pick the most suitable format for the content and structure the post accordingly" : ""}
 
-Return a JSON object with keys for each requested platform and the post content as values.
+Return a JSON object with this structure:
+{
+  "posts": { "platform": "post content..." },
+  "formats": { "platform": "format_name" }
+}
+${useSmartFormats ? "Include the format you chose for each platform in the formats object." : "Use 'standard' for all formats."}
 ONLY return valid JSON, no markdown, no explanation.`;
 
     const userContent: any[] = [
@@ -128,7 +179,7 @@ ${platforms.map(p => `- ${p}: ${platformDescriptions[p] || "Professional and eng
 
 Content to share: ${description}
 
-Return JSON like: {"linkedin": "post content...", "instagram": "post content...", etc.}`
+Return JSON like: {"posts": {"linkedin": "post content...", "instagram": "post content..."}, "formats": {"linkedin": "carousel", "instagram": "caption"}}`
       }
     ];
 
@@ -190,7 +241,7 @@ Return JSON like: {"linkedin": "post content...", "instagram": "post content..."
     }
 
     // Parse the JSON response
-    let posts: Record<string, string>;
+    let result: { posts?: Record<string, string>; formats?: Record<string, string> } | Record<string, string>;
     try {
       // Clean up the response - remove markdown code blocks if present
       let cleanContent = content.trim();
@@ -203,13 +254,19 @@ Return JSON like: {"linkedin": "post content...", "instagram": "post content..."
       if (cleanContent.endsWith("```")) {
         cleanContent = cleanContent.slice(0, -3);
       }
-      posts = JSON.parse(cleanContent.trim());
+      result = JSON.parse(cleanContent.trim());
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON:", content);
       throw new Error("Failed to parse AI response");
     }
 
-    return new Response(JSON.stringify({ posts }), {
+    // Handle both old format (direct posts) and new format (posts + formats)
+    const posts = (result as any).posts || result;
+    const formats = (result as any).formats || {};
+
+    console.log("Generated formats:", formats);
+
+    return new Response(JSON.stringify({ posts, formats }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
