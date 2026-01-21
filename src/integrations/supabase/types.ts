@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_pillars: {
+        Row: {
+          created_at: string
+          description: string
+          emoji: string | null
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          emoji?: string | null
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          emoji?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_posts: {
         Row: {
           content: string

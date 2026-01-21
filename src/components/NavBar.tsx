@@ -1,13 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn } from "lucide-react";
+import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 interface NavBarProps {
-  onNavigate?: (view: "hero" | "generator" | "edit") => void;
-  currentView?: "hero" | "generator" | "edit" | "setup";
+  onNavigate?: (view: "hero" | "generator" | "edit" | "pillars") => void;
+  currentView?: "hero" | "generator" | "edit" | "setup" | "pillars";
 }
 
 export function NavBar({ onNavigate, currentView }: NavBarProps) {
@@ -28,6 +28,12 @@ export function NavBar({ onNavigate, currentView }: NavBarProps) {
       label: "Home",
       icon: Home,
       show: true,
+    },
+    {
+      id: "pillars" as const,
+      label: "Ideas",
+      icon: Lightbulb,
+      show: !!voiceProfile,
     },
     {
       id: "generator" as const,

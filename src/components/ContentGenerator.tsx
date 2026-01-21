@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { PostHistory } from "./PostHistory";
 import { FormatModeToggle } from "./FormatModeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useContentPillars } from "@/hooks/useContentPillars";
 import { toast } from "sonner";
 
 interface ToneScales {
@@ -40,7 +41,22 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [historyKey, setHistoryKey] = useState(0);
   const [useFreeForm, setUseFreeForm] = useState(false);
+  const [placeholder, setPlaceholder] = useState("");
   const { user } = useAuth();
+  const { getPlaceholder } = useContentPillars();
+
+  // Cycle placeholder text through pillars
+  useEffect(() => {
+    const updatePlaceholder = () => {
+      setPlaceholder(getPlaceholder(
+        "e.g., Just finished this stunning modern home renovation with floor-to-ceiling windows and sustainable materials..."
+      ));
+    };
+    
+    updatePlaceholder();
+    const interval = setInterval(updatePlaceholder, 10000);
+    return () => clearInterval(interval);
+  }, [getPlaceholder]);
 
   const togglePlatform = (platform: Platform) => {
     setPlatforms((prev) =>
@@ -157,7 +173,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g., Just finished this stunning modern home renovation with floor-to-ceiling windows and sustainable materials. The clients wanted a space that connected indoor and outdoor living..."
+              placeholder={placeholder}
               className="w-full h-32 px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
             />
           </div>
