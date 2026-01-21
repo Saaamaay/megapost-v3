@@ -5,6 +5,7 @@ import { Sparkles, Zap, Palette, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
+import { ContentPillars } from "@/components/ContentPillars";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,7 +26,7 @@ interface VoiceProfile {
   samplePost: string;
 }
 
-type ViewState = "hero" | "setup" | "generator" | "edit";
+type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars";
 
 const Index = () => {
   const [viewState, setViewState] = useState<ViewState>("hero");
@@ -49,8 +50,8 @@ const Index = () => {
     setViewState("generator");
   };
 
-  const handleNavigate = (view: "hero" | "generator" | "edit") => {
-    if (view === "generator" && !activeProfile) {
+  const handleNavigate = (view: "hero" | "generator" | "edit" | "pillars") => {
+    if ((view === "generator" || view === "pillars") && !activeProfile) {
       setViewState("setup");
     } else {
       setViewState(view);
@@ -59,7 +60,8 @@ const Index = () => {
 
   const handleGetStarted = () => {
     if (user && voiceProfile) {
-      setViewState("generator");
+      // Go to pillars (ideas) page for logged-in users with profile
+      setViewState("pillars");
     } else if (user) {
       setViewState("setup");
     } else {
@@ -78,6 +80,16 @@ const Index = () => {
           initialProfile={activeProfile}
           isEditing
         />
+      </div>
+    );
+  }
+
+  // Show content pillars (ideas) for logged-in users
+  if (viewState === "pillars" && activeProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="pillars" />
+        <ContentPillars onStartCreating={() => setViewState("generator")} />
       </div>
     );
   }
