@@ -33,7 +33,7 @@ const Index = () => {
   const [viewState, setViewState] = useState<ViewState>("hero");
   const [localVoiceProfile, setLocalVoiceProfile] = useState<VoiceProfile | null>(null);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
-  const { user, loading, voiceProfile, signOut, saveVoiceProfile } = useAuth();
+  const { user, loading, voiceProfile, allProfiles, signOut, saveVoiceProfile, deleteProfile } = useAuth();
   const navigate = useNavigate();
 
   // Use saved profile if available
@@ -53,6 +53,17 @@ const Index = () => {
     setLocalVoiceProfile(profile);
     setEditingProfileId(null);
     setViewState("generator");
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!voiceProfile) return;
+    const { error } = await deleteProfile(voiceProfile.id);
+    if (error) {
+      toast.error(error.message || "Failed to delete profile");
+    } else {
+      toast.success("Business profile deleted");
+      setViewState("generator");
+    }
   };
 
   const handleAddNewBusiness = () => {
@@ -101,8 +112,10 @@ const Index = () => {
         <VoiceSetup
           onComplete={(profile) => handleVoiceSetupComplete(profile, true)}
           onCancel={() => setViewState("generator")}
+          onDelete={handleDeleteProfile}
           initialProfile={activeProfile}
           isEditing
+          canDelete={allProfiles.length > 1}
         />
       </div>
     );

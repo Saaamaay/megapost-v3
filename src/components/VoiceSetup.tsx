@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Sparkles, Building2, Palette, MessageSquare } from "lucide-react";
+import { ArrowRight, ArrowLeft, Sparkles, Building2, Palette, MessageSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ToneSlider } from "./ToneSlider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface VoiceProfile {
   profileName: string;
@@ -23,9 +34,11 @@ interface VoiceProfile {
 interface VoiceSetupProps {
   onComplete: (profile: VoiceProfile) => void;
   onCancel?: () => void;
+  onDelete?: () => Promise<void>;
   initialProfile?: VoiceProfile | null;
   isEditing?: boolean;
   isNewBusiness?: boolean;
+  canDelete?: boolean;
 }
 
 const employeeOptions = ["Just me", "2-10", "11-50", "51-200", "200+"];
@@ -40,8 +53,19 @@ const businessTypes = [
   "Other"
 ];
 
-export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing, isNewBusiness }: VoiceSetupProps) {
+export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isEditing, isNewBusiness, canDelete }: VoiceSetupProps) {
   const [step, setStep] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const [profile, setProfile] = useState<VoiceProfile>({
     profileName: initialProfile?.profileName || "",
     business: initialProfile?.business || "",
@@ -328,22 +352,53 @@ export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing, is
 
           {/* Navigation */}
           <div className="flex justify-between mt-8">
-            {step === 0 && onCancel ? (
-              <Button variant="ghost" onClick={onCancel} className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                onClick={() => setStep(step - 1)}
-                disabled={step === 0}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {step === 0 && onCancel ? (
+                <Button variant="ghost" onClick={onCancel} className="gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Cancel
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => setStep(step - 1)}
+                  disabled={step === 0}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </Button>
+              )}
+              
+              {isEditing && canDelete && step === 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this business profile?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the "{initialProfile?.profileName}" profile and all associated settings.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? "Deleting..." : "Delete Profile"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
             <Button
               variant="hero"
               onClick={handleNext}
