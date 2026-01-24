@@ -31,15 +31,15 @@ export function BusinessSwitcher({ onAddNew }: BusinessSwitcherProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-          "bg-muted/50 hover:bg-muted border border-border",
-          "text-foreground"
+          "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all",
+          "bg-muted/30 hover:bg-muted border border-border/50",
+          "text-muted-foreground hover:text-foreground"
         )}
       >
-        <Building2 className="w-4 h-4 text-muted-foreground" />
-        <span className="max-w-[120px] truncate">{voiceProfile.profileName}</span>
+        <Building2 className="w-3.5 h-3.5" />
+        <span className="max-w-[100px] truncate">{voiceProfile.profileName}</span>
         <ChevronDown className={cn(
-          "w-4 h-4 text-muted-foreground transition-transform",
+          "w-3 h-3 transition-transform",
           isOpen && "rotate-180"
         )} />
       </button>
