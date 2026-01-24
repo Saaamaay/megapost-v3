@@ -10,13 +10,13 @@ interface ContentPillar {
 }
 
 export function useContentPillars() {
-  const { user } = useAuth();
+  const { user, voiceProfile } = useAuth();
   const [pillars, setPillars] = useState<ContentPillar[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPillars = async () => {
-      if (!user) {
+      if (!user || !voiceProfile?.id) {
         setLoading(false);
         return;
       }
@@ -25,6 +25,7 @@ export function useContentPillars() {
         .from("content_pillars")
         .select("id, title, description, emoji")
         .eq("user_id", user.id)
+        .eq("voice_profile_id", voiceProfile.id)
         .order("created_at", { ascending: true });
 
       if (!error && data) {
@@ -34,7 +35,7 @@ export function useContentPillars() {
     };
 
     fetchPillars();
-  }, [user]);
+  }, [user, voiceProfile?.id]);
 
   // Get a cycling placeholder based on pillars
   const getPlaceholder = (defaultPlaceholder: string): string => {
