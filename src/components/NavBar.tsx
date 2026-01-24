@@ -53,11 +53,11 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
 
   return (
     <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
-      <nav className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between relative">
         {/* Logo */}
         <button
           onClick={() => onNavigate?.("hero")}
-          className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity z-10"
         >
           <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-warm shadow-glow">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
@@ -67,9 +67,9 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           </span>
         </button>
 
-        {/* Center Navigation - Only show when user is logged in and has profile */}
+        {/* Center Navigation - Absolutely positioned for true centering */}
         {user && voiceProfile && !isAuthPage && (
-          <div className="hidden sm:flex items-center gap-1 bg-muted/50 rounded-full p-1">
+          <div className="hidden sm:flex items-center gap-1 bg-muted/50 rounded-full p-1 absolute left-1/2 -translate-x-1/2">
             {navItems.filter(item => item.show).map((item) => {
               const isActive = currentView === item.id;
               return (
