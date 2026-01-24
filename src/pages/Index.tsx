@@ -18,6 +18,7 @@ interface ToneScales {
 }
 
 interface VoiceProfile {
+  profileName: string;
   business: string;
   businessLocation: string;
   employeeCount: string;
@@ -26,11 +27,12 @@ interface VoiceProfile {
   samplePost: string;
 }
 
-type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars";
+type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars" | "newBusiness";
 
 const Index = () => {
   const [viewState, setViewState] = useState<ViewState>("hero");
   const [localVoiceProfile, setLocalVoiceProfile] = useState<VoiceProfile | null>(null);
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const { user, loading, voiceProfile, signOut, saveVoiceProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -39,7 +41,9 @@ const Index = () => {
 
   const handleVoiceSetupComplete = async (profile: VoiceProfile, isEdit = false) => {
     if (user) {
-      const { error } = await saveVoiceProfile(profile);
+      // When editing, pass the profile ID; when creating new, don't pass ID
+      const profileId = isEdit && voiceProfile ? voiceProfile.id : undefined;
+      const { error } = await saveVoiceProfile(profile, profileId);
       if (error) {
         toast.error("Failed to save voice profile");
       } else {
@@ -47,7 +51,13 @@ const Index = () => {
       }
     }
     setLocalVoiceProfile(profile);
+    setEditingProfileId(null);
     setViewState("generator");
+  };
+
+  const handleAddNewBusiness = () => {
+    setEditingProfileId(null);
+    setViewState("newBusiness");
   };
 
   const handleNavigate = (view: "hero" | "generator" | "edit" | "pillars") => {
@@ -69,11 +79,25 @@ const Index = () => {
     }
   };
 
+  // New business setup view
+  if (viewState === "newBusiness") {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="setup" />
+        <VoiceSetup
+          onComplete={(profile) => handleVoiceSetupComplete(profile, false)}
+          onCancel={() => setViewState("generator")}
+          isNewBusiness
+        />
+      </div>
+    );
+  }
+
   // Edit profile view
   if (viewState === "edit" && activeProfile) {
     return (
       <div className="min-h-screen bg-gradient-hero">
-        <NavBar onNavigate={handleNavigate} currentView="edit" />
+        <NavBar onNavigate={handleNavigate} currentView="edit" onAddNewBusiness={handleAddNewBusiness} />
         <VoiceSetup
           onComplete={(profile) => handleVoiceSetupComplete(profile, true)}
           onCancel={() => setViewState("generator")}
@@ -88,7 +112,7 @@ const Index = () => {
   if (viewState === "pillars" && activeProfile) {
     return (
       <div className="min-h-screen bg-gradient-hero">
-        <NavBar onNavigate={handleNavigate} currentView="pillars" />
+        <NavBar onNavigate={handleNavigate} currentView="pillars" onAddNewBusiness={handleAddNewBusiness} />
         <ContentPillars onStartCreating={() => setViewState("generator")} />
       </div>
     );
@@ -98,7 +122,7 @@ const Index = () => {
   if (viewState === "generator" && activeProfile) {
     return (
       <div className="min-h-screen bg-gradient-hero">
-        <NavBar onNavigate={handleNavigate} currentView="generator" />
+        <NavBar onNavigate={handleNavigate} currentView="generator" onAddNewBusiness={handleAddNewBusiness} />
         <ContentGenerator voiceProfile={activeProfile} />
       </div>
     );
@@ -116,7 +140,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero overflow-hidden">
-      <NavBar onNavigate={handleNavigate} currentView="hero" />
+      <NavBar onNavigate={handleNavigate} currentView="hero" onAddNewBusiness={handleAddNewBusiness} />
 
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

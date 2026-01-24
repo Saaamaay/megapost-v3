@@ -20,6 +20,7 @@ interface ToneScales {
 }
 
 interface VoiceProfile {
+  profileName: string;
   business: string;
   businessLocation: string;
   employeeCount: string;
