@@ -23,10 +23,12 @@ interface VoiceProfile {
 }
 
 
+
 interface RequestBody {
   platforms: string[];
   description: string;
   voiceProfile: VoiceProfile;
+  voiceProfileId?: string;
   imageBase64?: string;
   useSmartFormats?: boolean;
 }
@@ -68,7 +70,7 @@ serve(async (req) => {
   }
 
   try {
-    const { platforms, description, voiceProfile, imageBase64, useSmartFormats = true }: RequestBody = await req.json();
+    const { platforms, description, voiceProfile, voiceProfileId, imageBase64, useSmartFormats = true }: RequestBody = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -87,13 +89,20 @@ serve(async (req) => {
           global: { headers: { Authorization: authHeader } }
         });
 
-        // Fetch recent rated posts for learning - get more to have enough per platform
-        const { data: ratedPosts } = await supabase
+        // Fetch recent rated posts for learning - filter by voice profile for isolation
+        let postsQuery = supabase
           .from("generated_posts")
           .select("content, rating, is_viral, platform")
           .not("rating", "is", null)
           .order("created_at", { ascending: false })
           .limit(50);
+        
+        // Filter by voice profile if provided
+        if (voiceProfileId) {
+          postsQuery = postsQuery.eq("voice_profile_id", voiceProfileId);
+        }
+        
+        const { data: ratedPosts } = await postsQuery;
 
         if (ratedPosts && ratedPosts.length > 0) {
           // Build platform-specific performance context

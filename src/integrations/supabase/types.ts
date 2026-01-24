@@ -53,6 +53,7 @@ export type Database = {
           platform: string
           rating: string | null
           user_id: string
+          voice_profile_id: string | null
         }
         Insert: {
           content: string
@@ -65,6 +66,7 @@ export type Database = {
           platform: string
           rating?: string | null
           user_id: string
+          voice_profile_id?: string | null
         }
         Update: {
           content?: string
@@ -77,8 +79,17 @@ export type Database = {
           platform?: string
           rating?: string | null
           user_id?: string
+          voice_profile_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generated_posts_voice_profile_id_fkey"
+            columns: ["voice_profile_id"]
+            isOneToOne: false
+            referencedRelation: "voice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voice_profiles: {
         Row: {
