@@ -36,17 +36,25 @@ export function PostHistory() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, voiceProfile } = useAuth();
 
   const fetchPosts = async () => {
     if (!user) return;
     
     setLoading(true);
-    const { data, error } = await supabase
+    
+    let query = supabase
       .from("generated_posts")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(20);
+    
+    // Filter by current voice profile if available
+    if (voiceProfile?.id) {
+      query = query.eq("voice_profile_id", voiceProfile.id);
+    }
+    
+    const { data, error } = await query;
 
     if (error) {
       console.error("Failed to fetch posts:", error);
@@ -63,7 +71,7 @@ export function PostHistory() {
     const handleRefresh = () => fetchPosts();
     window.addEventListener("refresh-post-history", handleRefresh);
     return () => window.removeEventListener("refresh-post-history", handleRefresh);
-  }, [user]);
+  }, [user, voiceProfile?.id]);
 
   const handleCopy = async (post: SavedPost) => {
     await navigator.clipboard.writeText(post.content);

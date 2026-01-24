@@ -20,6 +20,7 @@ interface ToneScales {
 }
 
 interface VoiceProfile {
+  id?: string;
   profileName: string;
   business: string;
   businessLocation: string;
@@ -74,6 +75,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
     const postsToSave = Object.entries(generatedPosts).map(([platform, content]) => ({
       user_id: user.id,
+      voice_profile_id: voiceProfile.id || null,
       platform,
       content,
       description: desc,
@@ -94,6 +96,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
     const { error } = await supabase.from("generated_posts").insert({
       user_id: user.id,
+      voice_profile_id: voiceProfile.id || null,
       platform,
       content,
       description: desc,
@@ -119,6 +122,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           platforms,
           description,
           voiceProfile,
+          voiceProfileId: voiceProfile.id,
           imageBase64: image || undefined,
           useSmartFormats: !useFreeForm,
         },
@@ -168,6 +172,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           platforms: [platform],
           description: lastDescription,
           voiceProfile,
+          voiceProfileId: voiceProfile.id,
           imageBase64: image || undefined,
           useSmartFormats: !useFreeForm,
         },
