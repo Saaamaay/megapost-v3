@@ -54,6 +54,12 @@ const platformFormats: Record<string, { name: string; description: string }[]> =
     { name: "question_post", description: "Post centered around asking the community a question" },
     { name: "standard", description: "Regular community-focused update" },
   ],
+  tiktok: [
+    { name: "hook_script", description: "Strong hook in first 3 seconds + talking points for short video" },
+    { name: "trend_take", description: "Commentary on a trend or challenge, relatable and punchy" },
+    { name: "story_time", description: "Story-style script with dramatic pacing for engagement" },
+    { name: "standard", description: "Quick, casual video caption with trending hashtags" },
+  ],
 };
 
 serve(async (req) => {
@@ -142,7 +148,8 @@ serve(async (req) => {
       linkedin: "Professional, warm, subtly personal. Focus on industry insight, the story behind the work, thoughtful reflection. Use 1-2 emojis max. Include a call to engagement at the end.",
       instagram: "Visual-first, breezy, emoji-friendly. Short caption (2-4 sentences) that complements the image. Use relevant hashtags (5-8). Keep it punchy and authentic.",
       facebook: "Conversational, community-oriented. Invites engagement, feels like talking to neighbors. Medium length. Ask a question to encourage comments.",
-      twitter: "Punchy, concise. One sharp thought, maybe a hook. Under 280 characters. Can include 1-2 hashtags max."
+      twitter: "Punchy, concise. One sharp thought, maybe a hook. Under 280 characters. Can include 1-2 hashtags max.",
+      tiktok: "Gen-Z energy, ultra-casual, trend-aware. Hook in first line. Use trending sounds references, relatable humor. Short sentences, conversational. Include 3-5 trending hashtags. Script-style for video content."
     };
 
     // Build format instructions based on mode

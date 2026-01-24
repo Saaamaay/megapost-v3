@@ -39,9 +39,11 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [posts, setPosts] = useState<Record<Platform, string> | null>(null);
   const [formats, setFormats] = useState<Record<Platform, string> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [regeneratingPlatform, setRegeneratingPlatform] = useState<Platform | null>(null);
   const [historyKey, setHistoryKey] = useState(0);
   const [useFreeForm, setUseFreeForm] = useState(false);
   const [placeholder, setPlaceholder] = useState("");
+  const [lastDescription, setLastDescription] = useState("");
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
 
@@ -86,11 +88,29 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     }
   };
 
+  const saveSinglePost = async (platform: Platform, content: string, desc: string) => {
+    if (!user) return;
+
+    const { error } = await supabase.from("generated_posts").insert({
+      user_id: user.id,
+      platform,
+      content,
+      description: desc,
+    });
+
+    if (error) {
+      console.error("Failed to save post:", error);
+    } else {
+      setHistoryKey(prev => prev + 1);
+    }
+  };
+
   const handleGenerate = async () => {
     if (platforms.length === 0 || !description.trim()) return;
 
     setIsGenerating(true);
     setPosts(null);
+    setLastDescription(description); // Save for regeneration
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-posts", {
@@ -133,6 +153,57 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleRegenerate = async (platform: Platform) => {
+    if (!lastDescription.trim()) return;
+
+    setRegeneratingPlatform(platform);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-posts", {
+        body: {
+          platforms: [platform],
+          description: lastDescription,
+          voiceProfile,
+          imageBase64: image || undefined,
+          useSmartFormats: !useFreeForm,
+        },
+      });
+
+      if (error) {
+        console.error("Edge function error:", error);
+        toast.error("Failed to regenerate post. Please try again.");
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      if (data?.posts && data.posts[platform]) {
+        const newContent = data.posts[platform] as string;
+        
+        // Update the posts state with the new content
+        setPosts(prev => prev ? { ...prev, [platform]: newContent } : null);
+        
+        // Update format if available
+        if (data?.formats && data.formats[platform]) {
+          setFormats(prev => prev ? { ...prev, [platform]: data.formats[platform] } : null);
+        }
+        
+        toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} post regenerated!`);
+        
+        // Save the new post
+        await saveSinglePost(platform, newContent, lastDescription);
+      }
+    } catch (error) {
+      console.error("Failed to regenerate post:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setRegeneratingPlatform(null);
     }
   };
 
@@ -248,6 +319,8 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                     content={posts[platform]}
                     format={formats?.[platform]}
                     index={index}
+                    onRegenerate={handleRegenerate}
+                    isRegenerating={regeneratingPlatform === platform}
                   />
                 ))}
               </div>
