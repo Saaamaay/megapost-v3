@@ -22,6 +22,7 @@ export type Database = {
           id: string
           title: string
           user_id: string
+          voice_profile_id: string | null
         }
         Insert: {
           created_at?: string
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           title: string
           user_id: string
+          voice_profile_id?: string | null
         }
         Update: {
           created_at?: string
@@ -38,8 +40,17 @@ export type Database = {
           id?: string
           title?: string
           user_id?: string
+          voice_profile_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "content_pillars_voice_profile_id_fkey"
+            columns: ["voice_profile_id"]
+            isOneToOne: false
+            referencedRelation: "voice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       generated_posts: {
         Row: {

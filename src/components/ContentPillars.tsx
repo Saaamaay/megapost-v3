@@ -23,15 +23,19 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
-  // Fetch existing pillars
+  // Fetch existing pillars for the current voice profile
   useEffect(() => {
     const fetchPillars = async () => {
-      if (!user) return;
+      if (!user || !voiceProfile?.id) {
+        setLoading(false);
+        return;
+      }
       
       const { data, error } = await supabase
         .from("content_pillars")
         .select("*")
         .eq("user_id", user.id)
+        .eq("voice_profile_id", voiceProfile.id)
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -43,7 +47,7 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
     };
 
     fetchPillars();
-  }, [user]);
+  }, [user, voiceProfile?.id]);
 
   // Generate initial pillars if none exist
   useEffect(() => {
@@ -69,12 +73,13 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
 
       const newPillars = data.pillars || [];
       
-      // Save new pillars to database
+      // Save new pillars to database with voice profile association
       for (const pillar of newPillars) {
         const { data: inserted, error: insertError } = await supabase
           .from("content_pillars")
           .insert({
             user_id: user.id,
+            voice_profile_id: voiceProfile.id,
             title: pillar.title,
             description: pillar.description,
             emoji: pillar.emoji || "💡",
