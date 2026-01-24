@@ -126,7 +126,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <NavBar onNavigate={handleNavigate} currentView="pillars" onAddNewBusiness={handleAddNewBusiness} />
-        <ContentPillars onStartCreating={() => setViewState("generator")} />
+        <ContentPillars key={voiceProfile?.id} onStartCreating={() => setViewState("generator")} />
       </div>
     );
   }
