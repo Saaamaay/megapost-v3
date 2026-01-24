@@ -136,7 +136,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <NavBar onNavigate={handleNavigate} currentView="generator" onAddNewBusiness={handleAddNewBusiness} />
-        <ContentGenerator voiceProfile={activeProfile} />
+        <ContentGenerator key={voiceProfile?.id} voiceProfile={activeProfile} />
       </div>
     );
   }
