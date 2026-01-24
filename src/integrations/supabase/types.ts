@@ -89,6 +89,8 @@ export type Database = {
           employee_count: string | null
           example_post: string | null
           id: string
+          is_active: boolean
+          profile_name: string | null
           tone_casual_professional: number | null
           tone_funny_sincere: number | null
           tone_grounded_inspiring: number | null
@@ -105,6 +107,8 @@ export type Database = {
           employee_count?: string | null
           example_post?: string | null
           id?: string
+          is_active?: boolean
+          profile_name?: string | null
           tone_casual_professional?: number | null
           tone_funny_sincere?: number | null
           tone_grounded_inspiring?: number | null
@@ -121,6 +125,8 @@ export type Database = {
           employee_count?: string | null
           example_post?: string | null
           id?: string
+          is_active?: boolean
+          profile_name?: string | null
           tone_casual_professional?: number | null
           tone_funny_sincere?: number | null
           tone_grounded_inspiring?: number | null

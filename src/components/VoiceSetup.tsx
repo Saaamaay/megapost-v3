@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ToneSlider } from "./ToneSlider";
 
 interface VoiceProfile {
+  profileName: string;
   business: string;
   businessLocation: string;
   employeeCount: string;
@@ -24,6 +25,7 @@ interface VoiceSetupProps {
   onCancel?: () => void;
   initialProfile?: VoiceProfile | null;
   isEditing?: boolean;
+  isNewBusiness?: boolean;
 }
 
 const employeeOptions = ["Just me", "2-10", "11-50", "51-200", "200+"];
@@ -38,9 +40,10 @@ const businessTypes = [
   "Other"
 ];
 
-export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: VoiceSetupProps) {
+export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing, isNewBusiness }: VoiceSetupProps) {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<VoiceProfile>({
+    profileName: initialProfile?.profileName || "",
     business: initialProfile?.business || "",
     businessLocation: initialProfile?.businessLocation || "",
     employeeCount: initialProfile?.employeeCount || "",
@@ -78,7 +81,7 @@ export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: 
   const canProceed = () => {
     switch (step) {
       case 0:
-        return profile.business.trim().length > 0;
+        return profile.profileName.trim().length > 0 && profile.business.trim().length > 0;
       case 1:
         return true;
       case 2:
@@ -147,6 +150,21 @@ export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: 
                 exit={{ opacity: 0 }}
                 className="space-y-4"
               >
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Profile name <span className="text-muted-foreground">(for switching between businesses)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={profile.profileName}
+                    onChange={(e) =>
+                      setProfile((prev) => ({ ...prev, profileName: e.target.value }))
+                    }
+                    placeholder="e.g., My Architecture Firm"
+                    className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Describe your business in one sentence
@@ -335,7 +353,7 @@ export function VoiceSetup({ onComplete, onCancel, initialProfile, isEditing }: 
               {step === 2 ? (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  {isEditing ? "Save Changes" : "Start Creating"}
+                  {isEditing ? "Save Changes" : isNewBusiness ? "Add Business" : "Start Creating"}
                 </>
               ) : (
                 <>

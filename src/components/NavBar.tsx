@@ -2,16 +2,18 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 interface NavBarProps {
   onNavigate?: (view: "hero" | "generator" | "edit" | "pillars") => void;
   currentView?: "hero" | "generator" | "edit" | "setup" | "pillars";
+  onAddNewBusiness?: () => void;
 }
 
-export function NavBar({ onNavigate, currentView }: NavBarProps) {
-  const { user, loading, signOut, voiceProfile } = useAuth();
+export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProps) {
+  const { user, loading, signOut, voiceProfile, allProfiles } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -98,8 +100,13 @@ export function NavBar({ onNavigate, currentView }: NavBarProps) {
           </div>
         )}
 
-        {/* Right side - Auth */}
+        {/* Right side - Business Switcher & Auth */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Business Switcher - only show when logged in with profile */}
+          {user && voiceProfile && allProfiles.length > 0 && !isAuthPage && (
+            <BusinessSwitcher onAddNew={onAddNewBusiness} />
+          )}
+          
           {loading ? null : user ? (
             <>
               {/* Mobile nav buttons */}
@@ -121,9 +128,6 @@ export function NavBar({ onNavigate, currentView }: NavBarProps) {
                   })}
                 </div>
               )}
-              <span className="text-sm text-muted-foreground hidden md:inline max-w-[150px] truncate">
-                {user.email}
-              </span>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Sign Out</span>
