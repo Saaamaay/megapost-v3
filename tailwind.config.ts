@@ -55,6 +55,7 @@ export default {
         instagram: "hsl(var(--instagram))",
         facebook: "hsl(var(--facebook))",
         twitter: "hsl(var(--twitter))",
+        tiktok: "hsl(var(--tiktok))",
       },
       borderRadius: {
         lg: "var(--radius)",
