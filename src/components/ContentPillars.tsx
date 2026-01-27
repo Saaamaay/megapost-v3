@@ -73,8 +73,25 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
 
       const newPillars = data.pillars || [];
       
-      // Save new pillars to database with voice profile association
-      for (const pillar of newPillars) {
+      // Filter out duplicates by checking title similarity
+      const existingTitles = pillars.map(p => p.title.toLowerCase().trim());
+      const uniquePillars = newPillars.filter((pillar: { title: string }) => {
+        const newTitle = pillar.title.toLowerCase().trim();
+        // Check for exact match or high similarity
+        return !existingTitles.some(existing => 
+          existing === newTitle || 
+          existing.includes(newTitle) || 
+          newTitle.includes(existing)
+        );
+      });
+
+      if (uniquePillars.length === 0 && !isInitial) {
+        toast.info("Couldn't find a unique idea - try again!");
+        return;
+      }
+      
+      // Save unique pillars to database with voice profile association
+      for (const pillar of uniquePillars) {
         const { data: inserted, error: insertError } = await supabase
           .from("content_pillars")
           .insert({
@@ -94,8 +111,8 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
         }
       }
 
-      if (!isInitial) {
-        toast.success(`Added ${newPillars.length} new content ideas!`);
+      if (!isInitial && uniquePillars.length > 0) {
+        toast.success("Added 1 new content idea!");
       }
     } catch (error) {
       console.error("Error generating pillars:", error);
