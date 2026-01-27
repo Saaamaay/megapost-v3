@@ -198,37 +198,88 @@ Carousels are for content that has MULTIPLE DISTINCT POINTS that need separate s
       describeTone(voiceProfile.toneScales.groundedInspiring, "Down-to-earth", "Inspiring"),
     ].join(", ");
 
-    // Build platform-specific performance section
+    // Infer perspective based on employee count and business type
+    const isPersonalBrand = !voiceProfile.employeeCount || 
+      voiceProfile.employeeCount === "Just me" || 
+      voiceProfile.employeeCount === "1" ||
+      voiceProfile.businessType?.toLowerCase().includes("personal") ||
+      voiceProfile.businessType?.toLowerCase().includes("consultant") ||
+      voiceProfile.businessType?.toLowerCase().includes("freelance");
+
+    // Build platform-specific performance section - STRUCTURE/STYLE only, NOT topics
     let performanceSection = "";
     if (hasPerformanceData) {
-      performanceSection = `\n\nPLATFORM-SPECIFIC LEARNING (use to match tone/style, NOT to limit format choices):
+      performanceSection = `
+═══════════════════════════════════════════════════════
+STYLE PATTERNS FROM PAST PERFORMANCE
+═══════════════════════════════════════════════════════
 ${Object.entries(platformPerformance).map(([platform, context]) => 
-  `\n${platform.toUpperCase()}:${context}`
+  `${platform.toUpperCase()}:${context}`
 ).join("\n")}
 
-IMPORTANT: This learning is about VOICE and STYLE, not format. Still pick the best format for the current content - don't just repeat the same format because it worked before.`;
+NOTE: These patterns are about STRUCTURE and STYLE (hooks, length, formatting)—not topics to repeat.`;
     }
 
-    const systemPrompt = `You are an expert social media copywriter. Your job is to create platform-specific posts that sound authentic to the user's voice.
+    const systemPrompt = `You are an expert social media copywriter.
 
-USER'S VOICE PROFILE:
+═══════════════════════════════════════════════════════
+AUTHOR BACKGROUND (for your understanding, NOT for inclusion)
+═══════════════════════════════════════════════════════
+<context>
 - Business: ${voiceProfile.business}
 ${voiceProfile.businessLocation ? `- Location: ${voiceProfile.businessLocation}` : ""}
-${voiceProfile.businessType ? `- Business type: ${voiceProfile.businessType}` : ""}
+${voiceProfile.businessType ? `- Type: ${voiceProfile.businessType}` : ""}
 ${voiceProfile.employeeCount ? `- Team size: ${voiceProfile.employeeCount}` : ""}
+</context>
+
+This tells you WHO you are writing for. 
+It is NOT a list of topics to mention in posts.
+
+═══════════════════════════════════════════════════════
+VOICE & STYLE (always apply)
+═══════════════════════════════════════════════════════
+<voice>
 - Tone: ${toneDescription}
-${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
+${voiceProfile.samplePost ? `- Writing style example: "${voiceProfile.samplePost}"` : ""}
+</voice>
+
+Match their energy, sentence rhythm, and personality. 
+Don't copy the example verbatim—capture the feel.
 ${performanceSection}
+
+═══════════════════════════════════════════════════════
+THE CORE RULE
+═══════════════════════════════════════════════════════
+The user's message defines the topic completely.
+
+Before mentioning ANY business details (products, services, industry specifics), ask yourself:
+→ "Did they bring this up, or would it feel shoehorned?"
+
+If the answer is "shoehorned" → LEAVE IT OUT. 
+Write about what THEY wrote about, in their voice.
+
+Examples:
+- Input: "Had coffee with a friend from Netflix" → Write about the coffee/conversation/Netflix. Do NOT pivot to their business.
+- Input: "Just shipped a major update to our platform" → Business context IS relevant here. Use it.
+
+═══════════════════════════════════════════════════════
+PERSPECTIVE
+═══════════════════════════════════════════════════════
+${isPersonalBrand 
+  ? "This is a PERSONAL BRAND. Use \"I\", \"me\", \"my\"." 
+  : "This is a COMPANY BRAND. Use \"We\", \"our\", \"the team\"."}
 ${formatInstructions}
 
-IMPORTANT RULES:
-1. Write in the user's authentic voice based on their profile
-2. Each platform post should be unique and optimized for that platform
+═══════════════════════════════════════════════════════
+IMPORTANT RULES
+═══════════════════════════════════════════════════════
+1. Write in the user's authentic voice
+2. Each platform post should be unique
 3. Never use generic AI-sounding phrases
 4. Make posts feel personal and genuine
 5. Adapt length and style for each platform
-${hasPerformanceData ? "6. Learn tone/hooks from past successes on EACH platform, but vary your format choices based on the current content" : ""}
-${useSmartFormats ? `${hasPerformanceData ? "7" : "6"}. Pick the most suitable format for THIS content - don't default to the same format every time` : ""}
+6. Learn tone from past successes
+7. Pick the most suitable format for THIS content
 
 Return a JSON object with this structure:
 {
