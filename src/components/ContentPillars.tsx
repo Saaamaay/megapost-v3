@@ -52,20 +52,20 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
   // Generate initial pillars if none exist
   useEffect(() => {
     if (!loading && pillars.length === 0 && voiceProfile && !generating) {
-      generatePillars(true);
+      generateInitialPillars();
     }
   }, [loading, pillars.length, voiceProfile]);
 
-  const generatePillars = async (isInitial = false) => {
+  // Generate initial set of pillars (4-5 balanced mix)
+  const generateInitialPillars = async () => {
     if (!voiceProfile || !user) return;
     
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-pillars", {
+      const { data, error } = await supabase.functions.invoke("generate-initial-pillars", {
         body: {
           businessType: voiceProfile.businessType,
           businessDescription: voiceProfile.business,
-          existingPillars: pillars.map(p => p.title),
         },
       });
 
@@ -73,25 +73,8 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
 
       const newPillars = data.pillars || [];
       
-      // Filter out duplicates by checking title similarity
-      const existingTitles = pillars.map(p => p.title.toLowerCase().trim());
-      const uniquePillars = newPillars.filter((pillar: { title: string }) => {
-        const newTitle = pillar.title.toLowerCase().trim();
-        // Check for exact match or high similarity
-        return !existingTitles.some(existing => 
-          existing === newTitle || 
-          existing.includes(newTitle) || 
-          newTitle.includes(existing)
-        );
-      });
-
-      if (uniquePillars.length === 0 && !isInitial) {
-        toast.info("Couldn't find a unique idea - try again!");
-        return;
-      }
-      
-      // Save unique pillars to database with voice profile association
-      for (const pillar of uniquePillars) {
+      // Save all initial pillars to database
+      for (const pillar of newPillars) {
         const { data: inserted, error: insertError } = await supabase
           .from("content_pillars")
           .insert({
@@ -110,13 +93,76 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
           setPillars(prev => [...prev, inserted]);
         }
       }
+    } catch (error) {
+      console.error("Error generating initial pillars:", error);
+      toast.error("Failed to generate content ideas");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
-      if (!isInitial && uniquePillars.length > 0) {
+  // Generate a single new pillar that fills a gap
+  const generateSinglePillar = async () => {
+    if (!voiceProfile || !user) return;
+    
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-single-pillar", {
+        body: {
+          businessType: voiceProfile.businessType,
+          businessDescription: voiceProfile.business,
+          existingPillars: pillars.map(p => p.title),
+        },
+      });
+
+      if (error) throw error;
+
+      const newPillars = data.pillars || [];
+      
+      if (newPillars.length === 0) {
+        toast.info("Couldn't generate a new idea - try again!");
+        return;
+      }
+
+      // Filter out duplicates by checking title similarity
+      const existingTitles = pillars.map(p => p.title.toLowerCase().trim());
+      const pillar = newPillars[0];
+      const newTitle = pillar.title.toLowerCase().trim();
+      
+      const isDuplicate = existingTitles.some(existing => 
+        existing === newTitle || 
+        existing.includes(newTitle) || 
+        newTitle.includes(existing)
+      );
+
+      if (isDuplicate) {
+        toast.info("Generated idea was too similar - try again!");
+        return;
+      }
+      
+      // Save the new pillar
+      const { data: inserted, error: insertError } = await supabase
+        .from("content_pillars")
+        .insert({
+          user_id: user.id,
+          voice_profile_id: voiceProfile.id,
+          title: pillar.title,
+          description: pillar.description,
+          emoji: pillar.emoji || "💡",
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Error saving pillar:", insertError);
+        toast.error("Failed to save idea");
+      } else if (inserted) {
+        setPillars(prev => [...prev, inserted]);
         toast.success("Added 1 new content idea!");
       }
     } catch (error) {
-      console.error("Error generating pillars:", error);
-      toast.error("Failed to generate content ideas");
+      console.error("Error generating single pillar:", error);
+      toast.error("Failed to generate content idea");
     } finally {
       setGenerating(false);
     }
@@ -203,7 +249,7 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button
           variant="outline"
-          onClick={() => generatePillars(false)}
+          onClick={generateSinglePillar}
           disabled={generating}
           className="gap-2"
         >
