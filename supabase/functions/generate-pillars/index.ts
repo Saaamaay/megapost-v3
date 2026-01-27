@@ -24,9 +24,12 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const existingContext = existingPillars.length > 0 
-      ? `\n\nThe user already has these content pillars, so suggest something DIFFERENT:\n${existingPillars.map(p => `- ${p}`).join('\n')}`
+    const isAddingMore = existingPillars.length > 0;
+    const existingContext = isAddingMore 
+      ? `\n\nIMPORTANT: The user already has these content pillars. You MUST suggest something COMPLETELY DIFFERENT - do not repeat or rephrase any of these:\n${existingPillars.map(p => `- ${p}`).join('\n')}`
       : '';
+
+    const pillarCount = isAddingMore ? 1 : '3-5';
 
     const systemPrompt = `You are a social media strategist helping small businesses develop content themes.
 
@@ -37,17 +40,17 @@ Each pillar should be:
 - Actionable and easy to create content for
 - Engaging for their audience
 - Something they can post about regularly
-
-Return a JSON array with 3-5 pillars. Each pillar should have:
-- emoji: A single relevant emoji
-- title: Short catchy name (2-4 words)
-- description: Brief explanation of what content fits this theme (10-15 words)
+- UNIQUE and NOT similar to any existing pillars
 ${existingContext}
+
+Return a JSON array with exactly ${pillarCount} pillar${isAddingMore ? '' : 's'}. Each pillar should have:
+- emoji: A single relevant emoji
+- title: Short catchy name (2-4 words) - must be distinctly different from existing pillars
+- description: Brief explanation of what content fits this theme (10-15 words)
 
 Example response:
 [
-  {"emoji": "☕", "title": "Behind the counter", "description": "Your baristas at work, the craft of making great coffee"},
-  {"emoji": "🌿", "title": "Bean origins", "description": "Stories about where your coffee comes from and the farmers"}
+  {"emoji": "☕", "title": "Behind the counter", "description": "Your baristas at work, the craft of making great coffee"}
 ]`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
