@@ -106,6 +106,7 @@ serve(async (req) => {
 
         if (ratedPosts && ratedPosts.length > 0) {
           // Build platform-specific performance context
+          // Extract ONLY structural patterns (hooks, rhythm, formatting) - NOT topics
           for (const platform of platforms) {
             const platformPosts = ratedPosts.filter(p => p.platform === platform);
             
@@ -113,29 +114,42 @@ serve(async (req) => {
             
             let context = "";
             
+            // Analyze structural patterns from high performers
             const nailedIt = platformPosts
               .filter(p => p.rating === "nailed_it")
-              .slice(0, 3)
-              .map(p => p.content.substring(0, 200));
+              .slice(0, 3);
             
             const notMyVoice = platformPosts
               .filter(p => p.rating === "not_my_voice")
-              .slice(0, 2)
-              .map(p => p.content.substring(0, 150));
+              .slice(0, 2);
             
             const viral = platformPosts
               .filter(p => p.is_viral)
-              .slice(0, 2)
-              .map(p => p.content.substring(0, 200));
+              .slice(0, 2);
             
+            // Extract structural patterns, not content
             if (nailedIt.length > 0) {
-              context += `\n  ✓ STYLE TO EMULATE (these nailed your voice):\n${nailedIt.map(c => `    "${c}..."`).join("\n")}`;
+              context += `\n  ✓ STRUCTURAL PATTERNS THAT WORK (analyze hook style, rhythm, formatting—ignore topics):`;
+              nailedIt.forEach(p => {
+                const firstLine = p.content.split('\n')[0].substring(0, 80);
+                const hasEmoji = /[\u{1F300}-\u{1F9FF}]/u.test(p.content);
+                const lineCount = p.content.split('\n').filter((l: string) => l.trim()).length;
+                context += `\n    Hook: "${firstLine}..." | Lines: ${lineCount} | Emojis: ${hasEmoji ? 'yes' : 'no'}`;
+              });
             }
             if (notMyVoice.length > 0) {
-              context += `\n  ✗ STYLE TO AVOID (these missed the mark):\n${notMyVoice.map(c => `    "${c}..."`).join("\n")}`;
+              context += `\n  ✗ PATTERNS TO AVOID:`;
+              notMyVoice.forEach(p => {
+                const firstLine = p.content.split('\n')[0].substring(0, 60);
+                context += `\n    Missed: "${firstLine}..."`;
+              });
             }
             if (viral.length > 0) {
-              context += `\n  ⭐ HIGH PERFORMERS (learn from these hooks):\n${viral.map(c => `    "${c}..."`).join("\n")}`;
+              context += `\n  ⭐ HIGH-PERFORMER HOOKS (study the opening style):`;
+              viral.forEach(p => {
+                const firstLine = p.content.split('\n')[0].substring(0, 100);
+                context += `\n    "${firstLine}"`;
+              });
             }
             
             if (context) {
@@ -201,34 +215,84 @@ Carousels are for content that has MULTIPLE DISTINCT POINTS that need separate s
     // Build platform-specific performance section
     let performanceSection = "";
     if (hasPerformanceData) {
-      performanceSection = `\n\nPLATFORM-SPECIFIC LEARNING (use to match tone/style, NOT to limit format choices):
+      performanceSection = `
+═══════════════════════════════════════════════════════
+STYLE PATTERNS FROM PAST PERFORMANCE
+═══════════════════════════════════════════════════════
 ${Object.entries(platformPerformance).map(([platform, context]) => 
-  `\n${platform.toUpperCase()}:${context}`
-).join("\n")}
+  `${platform.toUpperCase()}:${context}`
+).join("\n\n")}
 
-IMPORTANT: This learning is about VOICE and STYLE, not format. Still pick the best format for the current content - don't just repeat the same format because it worked before.`;
+NOTE: These patterns are about STRUCTURE and STYLE (hooks, length, formatting)—not topics to repeat.`;
     }
 
-    const systemPrompt = `You are an expert social media copywriter. Your job is to create platform-specific posts that sound authentic to the user's voice.
+    // Infer perspective from employee count and business type
+    const isPersonalBrand = 
+      voiceProfile.employeeCount === "1" || 
+      voiceProfile.employeeCount === "Just me" ||
+      voiceProfile.businessType?.toLowerCase().includes("consultant") ||
+      voiceProfile.businessType?.toLowerCase().includes("freelancer") ||
+      voiceProfile.businessType?.toLowerCase().includes("coach") ||
+      voiceProfile.businessType?.toLowerCase().includes("creator");
+    
+    const perspectiveGuidance = isPersonalBrand 
+      ? 'Personal brand detected → Use "I", "me", "my"'
+      : 'Company brand detected → Use "We", "our", "the team"';
 
-USER'S VOICE PROFILE:
+    const systemPrompt = `You are an expert social media copywriter.
+
+═══════════════════════════════════════════════════════
+AUTHOR BACKGROUND (for your understanding, NOT for inclusion)
+═══════════════════════════════════════════════════════
 - Business: ${voiceProfile.business}
 ${voiceProfile.businessLocation ? `- Location: ${voiceProfile.businessLocation}` : ""}
-${voiceProfile.businessType ? `- Business type: ${voiceProfile.businessType}` : ""}
+${voiceProfile.businessType ? `- Type: ${voiceProfile.businessType}` : ""}
 ${voiceProfile.employeeCount ? `- Team size: ${voiceProfile.employeeCount}` : ""}
+
+This tells you WHO you are writing for. 
+It is NOT a list of topics to mention in posts.
+
+═══════════════════════════════════════════════════════
+VOICE & STYLE (always apply)
+═══════════════════════════════════════════════════════
 - Tone: ${toneDescription}
-${voiceProfile.samplePost ? `- Example of their writing style: "${voiceProfile.samplePost}"` : ""}
+${voiceProfile.samplePost ? `- Writing style example: "${voiceProfile.samplePost}"` : ""}
+
+Match their energy, sentence rhythm, and personality. 
+Don't copy the example verbatim—capture the feel.
 ${performanceSection}
+
+═══════════════════════════════════════════════════════
+THE CORE RULE
+═══════════════════════════════════════════════════════
+The user's message defines the topic completely.
+
+Before mentioning ANY business details (products, services, industry specifics), ask yourself:
+→ "Did they bring this up, or would it feel shoehorned?"
+
+If the answer is "shoehorned" → LEAVE IT OUT. 
+Write about what THEY wrote about, in their voice.
+
+Examples:
+- Input: "Had coffee with a friend from Netflix" → Write about the coffee/conversation/Netflix. Do NOT pivot to their business.
+- Input: "Just shipped a major update to our platform" → Business context IS relevant here. Use it.
+
+═══════════════════════════════════════════════════════
+PERSPECTIVE
+═══════════════════════════════════════════════════════
+${perspectiveGuidance}
 ${formatInstructions}
 
-IMPORTANT RULES:
-1. Write in the user's authentic voice based on their profile
-2. Each platform post should be unique and optimized for that platform
+═══════════════════════════════════════════════════════
+IMPORTANT RULES
+═══════════════════════════════════════════════════════
+1. Write in the user's authentic voice
+2. Each platform post should be unique
 3. Never use generic AI-sounding phrases
 4. Make posts feel personal and genuine
 5. Adapt length and style for each platform
-${hasPerformanceData ? "6. Learn tone/hooks from past successes on EACH platform, but vary your format choices based on the current content" : ""}
-${useSmartFormats ? `${hasPerformanceData ? "7" : "6"}. Pick the most suitable format for THIS content - don't default to the same format every time` : ""}
+6. Learn structure/hooks from past performance patterns
+${useSmartFormats ? "7. Pick the most suitable format for THIS content" : ""}
 
 Return a JSON object with this structure:
 {
