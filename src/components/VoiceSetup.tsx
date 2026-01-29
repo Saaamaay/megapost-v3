@@ -29,6 +29,7 @@ interface VoiceProfile {
     groundedInspiring: number;
   };
   samplePost: string;
+  brandBeliefs: string[];
 }
 
 interface VoiceSetupProps {
@@ -79,6 +80,7 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
       groundedInspiring: 3,
     },
     samplePost: initialProfile?.samplePost || "",
+    brandBeliefs: initialProfile?.brandBeliefs || ["", "", ""],
   });
 
   const steps = [
@@ -93,10 +95,17 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
       icon: Palette,
     },
     {
-      title: "Share an example",
-      subtitle: "Paste an extract from your website or social media page you think sums you up best",
+      title: "Define your beliefs",
+      subtitle: "What does your brand stand for?",
       icon: MessageSquare,
     },
+  ];
+
+  // Belief prompt starters based on business type
+  const beliefStarters = [
+    "We believe that ",
+    "We believe ",
+    "We believe in ",
   ];
 
   const currentStep = steps[step];
@@ -334,17 +343,37 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                className="space-y-4"
               >
-                <textarea
-                  value={profile.samplePost}
-                  onChange={(e) =>
-                    setProfile((prev) => ({ ...prev, samplePost: e.target.value }))
-                  }
-                  placeholder="Paste an extract from your website or social media page you think sums you up best..."
-                  className="w-full h-40 px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                />
-                <p className="text-sm text-muted-foreground mt-2">
-                  This helps our AI match your unique style (optional)
+                <p className="text-sm text-muted-foreground mb-4">
+                  Complete 3 "We believe..." statements that capture what makes your brand different. These will help make your posts more distinctive and opinionated.
+                </p>
+                
+                {[0, 1, 2].map((index) => (
+                  <div key={index} className="space-y-1">
+                    <label className="block text-sm font-medium text-foreground">
+                      {beliefStarters[index]}
+                    </label>
+                    <input
+                      type="text"
+                      value={profile.brandBeliefs[index] || ""}
+                      onChange={(e) => {
+                        const newBeliefs = [...profile.brandBeliefs];
+                        newBeliefs[index] = e.target.value;
+                        setProfile((prev) => ({ ...prev, brandBeliefs: newBeliefs }));
+                      }}
+                      placeholder={
+                        index === 0 ? "e.g., great design should be accessible to everyone"
+                        : index === 1 ? "e.g., sustainability isn't a trend—it's the future"
+                        : "e.g., taking risks and learning from mistakes"
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                ))}
+                
+                <p className="text-sm text-muted-foreground mt-4">
+                  💡 Tip: Good beliefs are opinionated—they might even turn some people off, and that's okay!
                 </p>
               </motion.div>
             )}

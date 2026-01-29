@@ -104,6 +104,7 @@ export type Database = {
       }
       voice_profiles: {
         Row: {
+          brand_beliefs: string[] | null
           business_description: string | null
           business_location: string | null
           business_type: string | null
@@ -122,6 +123,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          brand_beliefs?: string[] | null
           business_description?: string | null
           business_location?: string | null
           business_type?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          brand_beliefs?: string[] | null
           business_description?: string | null
           business_location?: string | null
           business_type?: string | null
