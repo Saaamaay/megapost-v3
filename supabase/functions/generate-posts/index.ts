@@ -20,6 +20,7 @@ interface VoiceProfile {
   businessType: string;
   toneScales: ToneScales;
   samplePost: string;
+  brandBeliefs?: string[];
 }
 
 
@@ -239,6 +240,19 @@ NOTE: These patterns are about STRUCTURE and STYLE (hooks, length, formatting)�
       ? 'Personal brand detected → Use "I", "me", "my"'
       : 'Company brand detected → Use "We", "our", "the team"';
 
+    // Build brand beliefs section
+    const beliefsSection = voiceProfile.brandBeliefs?.filter(b => b?.trim()).length 
+      ? `
+═══════════════════════════════════════════════════════
+BRAND BELIEFS (what makes this brand distinctive)
+═══════════════════════════════════════════════════════
+${voiceProfile.brandBeliefs.filter(b => b?.trim()).map((belief, i) => `${i + 1}. We believe ${belief}`).join("\n")}
+
+These beliefs should subtly influence the perspective and opinions in posts.
+They make content feel opinionated and authentic, not generic.
+Don't quote beliefs directly—let them flavor the voice.`
+      : "";
+
     const systemPrompt = `You are an expert social media copywriter.
 
 ═══════════════════════════════════════════════════════
@@ -251,6 +265,13 @@ ${voiceProfile.employeeCount ? `- Team size: ${voiceProfile.employeeCount}` : ""
 
 This tells you WHO you are writing for. 
 It is NOT a list of topics to mention in posts.
+${beliefsSection}
+
+═══════════════════════════════════════════════════════
+VOICE & STYLE (always apply)
+═══════════════════════════════════════════════════════
+- Tone: ${toneDescription}
+${voiceProfile.samplePost ? `- Writing style example: "${voiceProfile.samplePost}"` : ""}
 
 ═══════════════════════════════════════════════════════
 VOICE & STYLE (always apply)

@@ -18,6 +18,7 @@ interface VoiceProfile {
   businessType: string;
   toneScales: ToneScales;
   samplePost: string;
+  brandBeliefs: string[];
   isActive: boolean;
 }
 
@@ -53,6 +54,7 @@ function mapDbToProfile(data: any): VoiceProfile {
       groundedInspiring: data.tone_grounded_inspiring ?? 3,
     },
     samplePost: data.example_post || "",
+    brandBeliefs: data.brand_beliefs || [],
     isActive: data.is_active ?? false,
   };
 }
@@ -159,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       tone_personal_formal: profile.toneScales.personalFormal,
       tone_grounded_inspiring: profile.toneScales.groundedInspiring,
       example_post: profile.samplePost,
+      brand_beliefs: profile.brandBeliefs || [],
     };
 
     let error;

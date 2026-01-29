@@ -28,6 +28,7 @@ interface VoiceProfile {
   businessType: string;
   toneScales: ToneScales;
   samplePost: string;
+  brandBeliefs: string[];
 }
 
 interface ContentGeneratorProps {

@@ -25,10 +25,21 @@ This tells you WHO you are writing for.
 It is NOT a list of topics to mention in posts.
 
 ═══════════════════════════════════════════════════════
+BRAND BELIEFS (what makes this brand distinctive)
+═══════════════════════════════════════════════════════
+1. We believe {belief1}
+2. We believe {belief2}
+3. We believe {belief3}
+
+These beliefs should subtly influence the perspective and opinions in posts.
+They make content feel opinionated and authentic, not generic.
+Don't quote beliefs directly—let them flavor the voice.
+
+═══════════════════════════════════════════════════════
 VOICE & STYLE (always apply)
 ═══════════════════════════════════════════════════════
 - Tone: {toneDescription}
-- Writing style example: "{voiceProfile.samplePost}"
+- Writing style example: "{voiceProfile.samplePost}" (optional, for backwards compatibility)
 
 Match their energy, sentence rhythm, and personality. 
 Don't copy the example verbatim—capture the feel.

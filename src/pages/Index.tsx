@@ -25,6 +25,7 @@ interface VoiceProfile {
   businessType: string;
   toneScales: ToneScales;
   samplePost: string;
+  brandBeliefs: string[];
 }
 
 type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars" | "newBusiness";
