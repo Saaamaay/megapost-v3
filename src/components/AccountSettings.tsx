@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock } from "lucide-react";
+import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function AccountSettings() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -207,6 +207,25 @@ export function AccountSettings() {
             <p className="text-xs text-muted-foreground italic">
               Notification preferences coming soon.
             </p>
+          </div>
+        </section>
+
+        {/* Sign Out */}
+        <section className="bg-card rounded-2xl border border-border p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-muted">
+                <LogOut className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h2 className="font-display font-bold text-lg text-foreground">Sign Out</h2>
+                <p className="text-muted-foreground text-sm">Sign out of your account on this device</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
           </div>
         </section>
 
