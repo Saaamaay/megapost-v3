@@ -1,14 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb } from "lucide-react";
+import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 interface NavBarProps {
-  onNavigate?: (view: "hero" | "generator" | "edit" | "pillars") => void;
-  currentView?: "hero" | "generator" | "edit" | "setup" | "pillars";
+  onNavigate?: (view: "hero" | "generator" | "edit" | "pillars" | "account") => void;
+  currentView?: "hero" | "generator" | "edit" | "setup" | "pillars" | "account";
   onAddNewBusiness?: () => void;
 }
 
@@ -48,6 +48,12 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
       label: "Voice Profile",
       icon: Settings,
       show: !!voiceProfile,
+    },
+    {
+      id: "account" as const,
+      label: "Account",
+      icon: UserCog,
+      show: !!user,
     },
   ];
 

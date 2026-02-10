@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
 import { ContentPillars } from "@/components/ContentPillars";
+import { AccountSettings } from "@/components/AccountSettings";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ interface VoiceProfile {
   brandBeliefs: string[];
 }
 
-type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars" | "newBusiness";
+type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars" | "newBusiness" | "account";
 
 const Index = () => {
   const [viewState, setViewState] = useState<ViewState>("hero");
@@ -72,7 +73,7 @@ const Index = () => {
     setViewState("newBusiness");
   };
 
-  const handleNavigate = (view: "hero" | "generator" | "edit" | "pillars") => {
+  const handleNavigate = (view: "hero" | "generator" | "edit" | "pillars" | "account") => {
     if ((view === "generator" || view === "pillars") && !activeProfile) {
       setViewState("setup");
     } else {
@@ -90,6 +91,16 @@ const Index = () => {
       navigate("/auth");
     }
   };
+
+  // Account settings view
+  if (viewState === "account" && user) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar onNavigate={handleNavigate} currentView="account" onAddNewBusiness={handleAddNewBusiness} />
+        <AccountSettings />
+      </div>
+    );
+  }
 
   // New business setup view
   if (viewState === "newBusiness") {
