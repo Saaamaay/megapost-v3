@@ -114,9 +114,7 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           )}
           
           {loading ? null : user ? (
-            <>
-              {/* Mobile nav buttons */}
-              {voiceProfile && !isAuthPage && (
+              voiceProfile && !isAuthPage && (
                 <div className="flex sm:hidden items-center gap-1">
                   {navItems.filter(item => item.show && item.id !== "hero").map((item) => {
                     const isActive = currentView === item.id;
@@ -133,12 +131,7 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
                     );
                   })}
                 </div>
-              )}
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Sign Out</span>
-              </Button>
-            </>
+              )
           ) : !isAuthPage ? (
             <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
               <LogIn className="w-4 h-4 sm:mr-2" />
