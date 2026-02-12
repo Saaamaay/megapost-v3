@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, ChevronDown, Check, Plus } from "lucide-react";
+import { Building2, ChevronDown, Check, Plus, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ interface BusinessSwitcherProps {
 
 export function BusinessSwitcher({ onAddNew }: BusinessSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { voiceProfile, allProfiles, switchProfile } = useAuth();
+  const { voiceProfile, allProfiles, switchProfile, signOut } = useAuth();
 
   if (!voiceProfile || allProfiles.length === 0) return null;
 
@@ -97,6 +97,18 @@ export function BusinessSwitcher({ onAddNew }: BusinessSwitcherProps) {
                   <Plus className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">
                     Add new business
+                  </span>
+                </button>
+              </div>
+
+              <div className="border-t border-border">
+                <button
+                  onClick={() => { setIsOpen(false); signOut(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted/50 text-destructive"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    Sign out
                   </span>
                 </button>
               </div>
