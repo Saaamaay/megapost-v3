@@ -115,8 +115,8 @@ export default function Auth() {
         >
           <div className="bg-card rounded-3xl shadow-lg border border-border p-8">
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-8 justify-center">
-              <span className="font-display font-extrabold text-3xl text-foreground tracking-tight">
+            <div className="flex items-center gap-3 mb-6 justify-center">
+              <span className="font-display font-bold text-lg text-muted-foreground tracking-tight">
                 megapost<span className="text-primary">.ai</span>
               </span>
             </div>
