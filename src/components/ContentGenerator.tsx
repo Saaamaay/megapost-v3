@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Lightbulb, ImageIcon } from "lucide-react";
+import { Sparkles, Loader2, Lightbulb, ImageIcon, Crown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { ImageUpload, type ImageRanking } from "./ImageUpload";
 import { PlatformSelector, type Platform } from "./PlatformSelector";
 import { PostCard } from "./PostCard";
@@ -10,6 +11,8 @@ import { FormatModeToggle } from "./FormatModeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentPillars } from "@/hooks/useContentPillars";
+import { usePostLimit } from "@/hooks/usePostLimit";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 
 interface ToneScales {
@@ -52,6 +55,8 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [lastDescription, setLastDescription] = useState("");
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
+  const { canGenerate: hasPostsLeft, postsRemaining, freeLimit, isPro, loading: limitLoading, refreshCount } = usePostLimit();
+  const { startCheckout } = useSubscription();
 
   // Cycle placeholder text through pillars
   useEffect(() => {
@@ -211,6 +216,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         
         toast.success("Posts generated successfully!");
         await savePosts(generatedPosts, description);
+        refreshCount();
       }
     } catch (error) {
       console.error("Failed to generate posts:", error);
@@ -267,7 +273,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     }
   };
 
-  const canGenerate = platforms.length > 0 && description.trim().length > 0;
+  const canGenerate = platforms.length > 0 && description.trim().length > 0 && hasPostsLeft;
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-10">
@@ -283,6 +289,58 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
             {voiceProfile.toneScales.casualProfessional <= 2 ? "Casual" : voiceProfile.toneScales.casualProfessional >= 4 ? "Professional" : "Balanced"}, {voiceProfile.businessType || "Business"}
           </span></span>
         </div>
+
+        {/* Usage / Paywall Banner */}
+        {!isPro && !limitLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-2xl border p-5 space-y-3 ${
+              hasPostsLeft 
+                ? "bg-primary/5 border-primary/20" 
+                : "bg-destructive/5 border-destructive/20"
+            }`}
+          >
+            {hasPostsLeft ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Free post available
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {postsRemaining} of {freeLimit} remaining
+                  </span>
+                </div>
+                <Progress value={((freeLimit - postsRemaining) / freeLimit) * 100} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  Try your first post free — upgrade to Pro for unlimited generation.
+                </p>
+              </>
+            ) : (
+              <div className="text-center space-y-3 py-2">
+                <div className="inline-flex p-3 rounded-full bg-primary/10 mx-auto">
+                  <Lock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg text-foreground">
+                    You've used your free post
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upgrade to Pro for unlimited post generation across all platforms.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
+                  className="gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  Upgrade to Pro — £20/mo
+                </Button>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* Input Section */}
         <div className="bg-card rounded-3xl border border-border shadow-card p-6 space-y-6">
