@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import megapostLogo from "@/assets/megapost-logo-light.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NavBar } from "@/components/NavBar";
@@ -117,9 +116,8 @@ export default function Auth() {
           <div className="bg-card rounded-3xl shadow-lg border border-border p-8">
             {/* Logo */}
             <div className="flex items-center gap-3 mb-8 justify-center">
-              <img src={megapostLogo} alt="Megapost" className="w-9 h-9 rounded-xl" />
-              <span className="font-display font-bold text-xl text-foreground">
-                Megapost
+              <span className="font-display font-extrabold text-2xl text-foreground tracking-tight">
+                megapost<span className="text-primary">.ai</span>
               </span>
             </div>
 
