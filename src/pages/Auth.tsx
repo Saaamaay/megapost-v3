@@ -78,8 +78,10 @@ export default function Auth() {
             toast.error(error.message);
           }
         } else {
-          toast.success("Account created! You're now signed in.");
-          navigate("/");
+          toast.success("Check your email to confirm your account before signing in!", { duration: 6000 });
+          setIsLogin(true);
+          setEmail("");
+          setPassword("");
         }
       }
     } finally {
