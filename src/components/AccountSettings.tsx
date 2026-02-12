@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, LogOut } from "lucide-react";
+import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, LogOut, Check, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,11 +18,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription, PLANS } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function AccountSettings() {
   const { user, signOut } = useAuth();
+  const { isPro, subscribed, subscriptionEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -190,11 +192,48 @@ export function AccountSettings() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-muted/50 border border-border text-center">
-            <p className="text-muted-foreground text-sm">
-              Billing management coming soon. You're currently on the <span className="text-foreground font-medium">Free</span> plan.
-            </p>
-          </div>
+          {isPro ? (
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                <span className="font-semibold text-foreground">Pro Plan</span>
+                <span className="ml-auto text-sm text-muted-foreground">
+                  {subscriptionEnd && `Renews ${new Date(subscriptionEnd).toLocaleDateString()}`}
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => openPortal().catch(() => toast.error("Failed to open billing portal"))}>
+                Manage Subscription
+              </Button>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-foreground">Free Plan</p>
+                  <p className="text-sm text-muted-foreground">Limited features</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-display font-bold text-2xl text-foreground">{PLANS.pro.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                </div>
+              </div>
+              <ul className="space-y-2 text-sm">
+                {["Unlimited post generation", "All platforms", "Priority support", "Content pillars"].map(f => (
+                  <li key={f} className="flex items-center gap-2 text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
+                className="w-full"
+                disabled={subLoading}
+              >
+                <Crown className="w-4 h-4" />
+                Upgrade to Pro
+              </Button>
+            </div>
+          )}
         </section>
 
         {/* Notification Preferences */}
