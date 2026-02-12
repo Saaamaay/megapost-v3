@@ -1,28 +1,38 @@
-// Format → recommended aspect ratio mapping
-const formatRatios: Record<string, number> = {
-  // LinkedIn
-  carousel: 1,          // 1:1 square slides
-  story_post: 1.91,     // 1.91:1 landscape
-  insight: 1.91,
-  // Instagram
-  reel_script: 9 / 16,  // 9:16 portrait
-  caption: 4 / 5,       // 4:5 portrait (optimal feed)
-  // Twitter
-  thread: 16 / 9,
-  hook_tweet: 16 / 9,
-  // Facebook
-  question_post: 1.91,
-  // TikTok
-  hook_script: 9 / 16,
-  trend_take: 9 / 16,
-  story_time: 9 / 16,
-  // Fallbacks per platform
-  standard: 1,
+// Platform + format → recommended aspect ratio
+const platformFormatRatios: Record<string, Record<string, number>> = {
+  linkedin: {
+    carousel: 1,          // 1:1 square slides
+    story_post: 1.91,     // 1.91:1 landscape
+    insight: 1.91,
+    standard: 1.91,       // landscape for feed
+  },
+  instagram: {
+    carousel: 1,          // 1:1 square slides
+    reel_script: 9 / 16,  // 9:16 portrait
+    caption: 4 / 5,       // 4:5 portrait (optimal feed)
+    standard: 1,          // square
+  },
+  twitter: {
+    thread: 16 / 9,
+    hook_tweet: 16 / 9,
+    standard: 16 / 9,
+  },
+  facebook: {
+    story_post: 1.91,
+    question_post: 1.91,
+    standard: 1.91,
+  },
+  tiktok: {
+    hook_script: 9 / 16,
+    trend_take: 9 / 16,
+    story_time: 9 / 16,
+    standard: 9 / 16,
+  },
 };
 
 const platformDefaultRatios: Record<string, number> = {
   linkedin: 1.91,
-  instagram: 1,        // square default
+  instagram: 1,
   twitter: 16 / 9,
   facebook: 1.91,
   tiktok: 9 / 16,
@@ -35,7 +45,7 @@ export interface CropRatio {
 }
 
 export function getRecommendedRatio(platform: string, format?: string): CropRatio {
-  const ratio = (format && formatRatios[format]) ?? platformDefaultRatios[platform] ?? 1;
+  const ratio = (format && platformFormatRatios[platform]?.[format]) ?? platformDefaultRatios[platform] ?? 1;
 
   // Express as simple w:h for display
   if (ratio === 1) return { width: 1, height: 1, label: "1:1" };
