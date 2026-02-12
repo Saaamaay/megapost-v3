@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb, UserCog, Crown } from "lucide-react";
+import { Home, PenSquare, Settings, LogOut, LogIn, Lightbulb, UserCog, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
+import megapostLogo from "@/assets/megapost-logo-light.png";
 
 interface NavBarProps {
   onNavigate?: (view: "hero" | "generator" | "edit" | "pillars" | "account") => void;
@@ -67,11 +68,9 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           onClick={() => onNavigate?.("hero")}
           className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
         >
-          <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-warm shadow-glow">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-          </div>
+          <img src={megapostLogo} alt="Megapost" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl" />
           <span className="font-display font-bold text-lg sm:text-xl text-foreground">
-            PostPilot
+            Megapost
           </span>
           {isPro && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
