@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb, UserCog } from "lucide-react";
+import { Sparkles, Home, PenSquare, Settings, LogOut, LogIn, Lightbulb, UserCog, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 
 interface NavBarProps {
@@ -14,6 +15,7 @@ interface NavBarProps {
 
 export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProps) {
   const { user, loading, signOut, voiceProfile, allProfiles } = useAuth();
+  const { isPro } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -71,6 +73,12 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           <span className="font-display font-bold text-lg sm:text-xl text-foreground">
             PostPilot
           </span>
+          {isPro && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+              <Crown className="w-3 h-3" />
+              PRO
+            </span>
+          )}
         </button>
 
         {/* Center Navigation - Only show when user is logged in and has profile */}
