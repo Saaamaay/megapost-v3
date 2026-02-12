@@ -36,12 +36,19 @@ export function ImageUpload({
       const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
       const remaining = maxImages - images.length;
       const toProcess = fileArray.slice(0, remaining);
+      if (toProcess.length === 0) return;
 
-      toProcess.forEach((file) => {
+      // Read all files, then batch-update once
+      let loaded = 0;
+      const results: string[] = [];
+      toProcess.forEach((file, i) => {
         const reader = new FileReader();
         reader.onload = (event) => {
-          const result = event.target?.result as string;
-          onImagesChange([...images, result]);
+          results[i] = event.target?.result as string;
+          loaded++;
+          if (loaded === toProcess.length) {
+            onImagesChange([...images, ...results]);
+          }
         };
         reader.readAsDataURL(file);
       });
