@@ -408,6 +408,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                     index={index}
                     onRegenerate={handleRegenerate}
                     isRegenerating={regeneratingPlatform === platform}
+                    imageSrc={getSelectedImage()}
                   />
                 ))}
               </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Platform } from "./PlatformSelector";
 import { Badge } from "@/components/ui/badge";
+import { CroppedImagePreview } from "./CroppedImagePreview";
 
 // TikTok icon (not in lucide-react)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -19,6 +20,7 @@ export interface PostCardProps {
   index: number;
   onRegenerate?: (platform: Platform) => Promise<void>;
   isRegenerating?: boolean;
+  imageSrc?: string;
 }
 
 const platformConfig: Record<Platform, {
@@ -65,7 +67,7 @@ const platformConfig: Record<Platform, {
   },
 };
 
-export function PostCard({ platform, content, format, index, onRegenerate, isRegenerating }: PostCardProps) {
+export function PostCard({ platform, content, format, index, onRegenerate, isRegenerating, imageSrc }: PostCardProps) {
   const [copied, setCopied] = useState(false);
   const config = platformConfig[platform];
   const Icon = config.icon;
@@ -155,6 +157,15 @@ export function PostCard({ platform, content, format, index, onRegenerate, isReg
       <div className="p-5">
         <p className="text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
       </div>
+
+      {/* Cropped Image Preview */}
+      {imageSrc && (
+        <CroppedImagePreview
+          imageSrc={imageSrc}
+          platform={platform}
+          format={format}
+        />
+      )}
     </motion.div>
   );
 }
