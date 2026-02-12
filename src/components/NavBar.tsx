@@ -6,7 +6,6 @@ import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
-import megapostLogo from "@/assets/megapost-logo-light.png";
 
 interface NavBarProps {
   onNavigate?: (view: "hero" | "generator" | "edit" | "pillars" | "account") => void;
@@ -68,9 +67,8 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           onClick={() => onNavigate?.("hero")}
           className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
         >
-          <img src={megapostLogo} alt="Megapost" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl" />
-          <span className="font-display font-bold text-lg sm:text-xl text-foreground">
-            Megapost
+          <span className="font-display font-extrabold text-xl sm:text-2xl text-foreground tracking-tight">
+            Mega<span className="text-primary">post</span>
           </span>
           {isPro && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
