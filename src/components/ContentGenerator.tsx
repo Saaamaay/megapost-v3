@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Lightbulb } from "lucide-react";
+import { Sparkles, Loader2, Lightbulb, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ImageUpload } from "./ImageUpload";
+import { ImageUpload, type ImageRanking } from "./ImageUpload";
 import { PlatformSelector, type Platform } from "./PlatformSelector";
 import { PostCard } from "./PostCard";
 import { PostHistory } from "./PostHistory";
@@ -36,7 +36,10 @@ interface ContentGeneratorProps {
 }
 
 export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [imageRankings, setImageRankings] = useState<ImageRanking[] | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [description, setDescription] = useState("");
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [posts, setPosts] = useState<Record<Platform, string> | null>(null);
@@ -63,6 +66,60 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     return () => clearInterval(interval);
   }, [getPlaceholder]);
 
+  // Auto-analyze when 2+ images uploaded
+  useEffect(() => {
+    if (images.length >= 2 && !imageRankings && !isAnalyzing) {
+      analyzeImages();
+    }
+    // Reset rankings when images change
+    if (images.length < 2) {
+      setImageRankings(null);
+    }
+  }, [images.length]);
+
+  const handleImagesChange = (newImages: string[]) => {
+    setImages(newImages);
+    // Reset rankings when images change
+    if (newImages.length !== images.length) {
+      setImageRankings(null);
+    }
+    // Default select first image
+    if (newImages.length > 0 && selectedImageIndex >= newImages.length) {
+      setSelectedImageIndex(0);
+    }
+  };
+
+  const analyzeImages = async () => {
+    if (images.length < 2) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-images", {
+        body: { images, platforms: platforms.length > 0 ? platforms : undefined },
+      });
+
+      if (error) {
+        console.error("Analyze error:", error);
+        toast.error("Couldn't analyze photos. You can still select one manually.");
+        return;
+      }
+
+      if (data?.rankings) {
+        setImageRankings(data.rankings);
+        // Auto-select the best image
+        const best = data.rankings.find((r: ImageRanking) => r.rank === 1);
+        if (best) {
+          setSelectedImageIndex(best.index);
+        }
+        toast.success("Photos ranked! Best one selected for your post.");
+      }
+    } catch (error) {
+      console.error("Failed to analyze images:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const togglePlatform = (platform: Platform) => {
     setPlatforms((prev) =>
       prev.includes(platform)
@@ -87,7 +144,6 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     if (error) {
       console.error("Failed to save posts:", error);
     } else {
-      // Trigger history refresh
       setHistoryKey(prev => prev + 1);
     }
   };
@@ -110,12 +166,17 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     }
   };
 
+  const getSelectedImage = () => {
+    if (images.length === 0) return undefined;
+    return images[selectedImageIndex] || images[0];
+  };
+
   const handleGenerate = async () => {
     if (platforms.length === 0 || !description.trim()) return;
 
     setIsGenerating(true);
     setPosts(null);
-    setLastDescription(description); // Save for regeneration
+    setLastDescription(description);
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-posts", {
@@ -124,7 +185,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           description,
           voiceProfile,
           voiceProfileId: voiceProfile.id,
-          imageBase64: image || undefined,
+          imageBase64: getSelectedImage(),
           useSmartFormats: !useFreeForm,
         },
       });
@@ -144,14 +205,11 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         const generatedPosts = data.posts as Record<Platform, string>;
         setPosts(generatedPosts);
         
-        // Store format info if available
         if (data?.formats) {
           setFormats(data.formats as Record<Platform, string>);
         }
         
         toast.success("Posts generated successfully!");
-        
-        // Auto-save to history
         await savePosts(generatedPosts, description);
       }
     } catch (error) {
@@ -174,7 +232,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           description: lastDescription,
           voiceProfile,
           voiceProfileId: voiceProfile.id,
-          imageBase64: image || undefined,
+          imageBase64: getSelectedImage(),
           useSmartFormats: !useFreeForm,
         },
       });
@@ -192,18 +250,13 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
       if (data?.posts && data.posts[platform]) {
         const newContent = data.posts[platform] as string;
-        
-        // Update the posts state with the new content
         setPosts(prev => prev ? { ...prev, [platform]: newContent } : null);
         
-        // Update format if available
         if (data?.formats && data.formats[platform]) {
           setFormats(prev => prev ? { ...prev, [platform]: data.formats[platform] } : null);
         }
         
         toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} post regenerated!`);
-        
-        // Save the new post
         await saveSinglePost(platform, newContent, lastDescription);
       }
     } catch (error) {
@@ -238,11 +291,38 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
               What would you like to share?
             </h2>
             <p className="text-muted-foreground text-sm">
-              Drop an image and describe what happened—we'll craft the perfect posts.
+              Drop your photos and describe what happened—we'll pick the best shot and craft the perfect posts.
             </p>
           </div>
 
-          <ImageUpload image={image} onImageChange={setImage} />
+          <ImageUpload
+            images={images}
+            onImagesChange={handleImagesChange}
+            rankings={imageRankings}
+            selectedIndex={selectedImageIndex}
+            onSelectImage={setSelectedImageIndex}
+            isAnalyzing={isAnalyzing}
+          />
+
+          {/* Re-analyze button if images changed */}
+          {images.length >= 2 && imageRankings && (
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={analyzeImages}
+                disabled={isAnalyzing}
+                className="text-xs"
+              >
+                {isAnalyzing ? (
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                ) : (
+                  <ImageIcon className="w-3 h-3 mr-1" />
+                )}
+                Re-analyze photos
+              </Button>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
