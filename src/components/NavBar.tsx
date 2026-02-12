@@ -68,7 +68,7 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
         >
           <span className="font-display font-extrabold text-xl sm:text-2xl text-foreground tracking-tight">
-            Mega<span className="text-primary">post</span>
+            megapost<span className="text-primary">.ai</span>
           </span>
           {isPro && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
