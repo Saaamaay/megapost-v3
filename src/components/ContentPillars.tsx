@@ -6,6 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+const EMOJI_REGEX = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+
+function safeEmoji(emoji: string | null | undefined, fallback = "💡"): string {
+  if (!emoji) return fallback;
+  // Check if it's a valid single emoji (including compound ones like 🧠, 🚀)
+  // Also allow multi-codepoint emoji like flags, skin tones, ZWJ sequences
+  const emojiFullRegex = /^[\p{Emoji}\p{Emoji_Component}\u200D\uFE0F]+$/u;
+  return emojiFullRegex.test(emoji) && emoji.length <= 10 ? emoji : fallback;
+}
+
 interface ContentPillar {
   id: string;
   title: string;
@@ -217,7 +227,7 @@ export const ContentPillars = ({ onStartCreating }: ContentPillarsProps) => {
               className="group relative bg-card border border-border rounded-xl p-4 hover:shadow-card transition-all duration-200"
             >
               <div className="flex items-start gap-4">
-                <span className="text-2xl">{pillar.emoji}</span>
+                <span className="text-2xl">{safeEmoji(pillar.emoji)}</span>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground">{pillar.title}</h3>
                   <p className="text-sm text-muted-foreground">{pillar.description}</p>
