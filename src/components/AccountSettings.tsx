@@ -76,7 +76,7 @@ export function AccountSettings() {
       }
       // Sign out locally after server-side deletion
       await supabase.auth.signOut();
-      toast.success("Your account and all data have been permanently deleted.");
+      toast.success("Your account, data, and subscription have been permanently deleted.");
     } catch {
       toast.error("Something went wrong");
     } finally {
