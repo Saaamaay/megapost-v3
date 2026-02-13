@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 
 const Terms = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Terms of Service — Megapost";
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col">
