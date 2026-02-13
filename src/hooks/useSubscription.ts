@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -12,47 +13,42 @@ export const PLANS = {
   },
 } as const;
 
-interface SubscriptionState {
+interface SubscriptionData {
   subscribed: boolean;
-  productId: string | null;
-  subscriptionEnd: string | null;
-  loading: boolean;
+  product_id: string | null;
+  subscription_end: string | null;
+}
+
+async function fetchSubscription(): Promise<SubscriptionData> {
+  const { data, error } = await supabase.functions.invoke("check-subscription");
+  if (error) throw error;
+  return {
+    subscribed: data.subscribed ?? false,
+    product_id: data.product_id ?? null,
+    subscription_end: data.subscription_end ?? null,
+  };
 }
 
 export function useSubscription() {
   const { session } = useAuth();
-  const [state, setState] = useState<SubscriptionState>({
-    subscribed: false,
-    productId: null,
-    subscriptionEnd: null,
-    loading: true,
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["subscription", session?.user?.id],
+    queryFn: fetchSubscription,
+    enabled: !!session,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 60_000,
+    placeholderData: { subscribed: false, product_id: null, subscription_end: null },
   });
 
-  const checkSubscription = useCallback(async () => {
-    if (!session) {
-      setState({ subscribed: false, productId: null, subscriptionEnd: null, loading: false });
-      return;
-    }
+  const subscribed = data?.subscribed ?? false;
+  const productId = data?.product_id ?? null;
+  const subscriptionEnd = data?.subscription_end ?? null;
 
-    try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
-      setState({
-        subscribed: data.subscribed ?? false,
-        productId: data.product_id ?? null,
-        subscriptionEnd: data.subscription_end ?? null,
-        loading: false,
-      });
-    } catch {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  }, [session]);
-
-  useEffect(() => {
-    checkSubscription();
-    const interval = setInterval(checkSubscription, 60_000);
-    return () => clearInterval(interval);
-  }, [checkSubscription]);
+  const checkSubscription = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["subscription"] });
+  }, [queryClient]);
 
   const startCheckout = async (priceId: string = PLANS.pro.price_id) => {
     const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -73,8 +69,11 @@ export function useSubscription() {
   };
 
   return {
-    ...state,
-    isPro: state.subscribed && state.productId === PLANS.pro.product_id,
+    subscribed,
+    productId,
+    subscriptionEnd,
+    loading: !session ? false : isLoading,
+    isPro: subscribed && productId === PLANS.pro.product_id,
     checkSubscription,
     startCheckout,
     openPortal,
