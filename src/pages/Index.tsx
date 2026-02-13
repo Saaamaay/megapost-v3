@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, Zap, Palette, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { ContentPillars } from "@/components/ContentPillars";
 import { AccountSettings } from "@/components/AccountSettings";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 
@@ -37,7 +38,21 @@ const Index = () => {
   const [localVoiceProfile, setLocalVoiceProfile] = useState<VoiceProfile | null>(null);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const { user, loading, voiceProfile, allProfiles, signOut, saveVoiceProfile, deleteProfile } = useAuth();
+  const { checkSubscription } = useSubscription();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle return from Stripe checkout
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    if (checkout === "success") {
+      checkSubscription();
+      toast.success("Welcome to Pro! Your subscription is now active.");
+      setSearchParams({}, { replace: true });
+    } else if (checkout === "cancelled") {
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, checkSubscription, setSearchParams]);
 
   // Use saved profile if available
   const activeProfile = voiceProfile || localVoiceProfile;
