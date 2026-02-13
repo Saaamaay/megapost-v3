@@ -103,9 +103,9 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
 
   // Belief prompt starters based on business type
   const beliefStarters = [
-    "We believe that ",
-    "We believe ",
-    "We believe in ",
+    "We believe that...",
+    "We stand for...",
+    "We believe in...",
   ];
 
   const currentStep = steps[step];
