@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -214,6 +214,16 @@ export default function Auth() {
             </svg>
             Continue with Google
           </Button>
+
+          {/* Privacy notice */}
+          {!isLogin && (
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              By signing up, you agree to our{" "}
+              <Link to="/privacy" className="text-primary hover:underline">
+                Privacy Policy
+              </Link>
+            </p>
+          )}
 
           {/* Toggle */}
           <div className="mt-6 text-center">
