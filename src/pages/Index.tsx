@@ -9,6 +9,7 @@ import { ContentPillars } from "@/components/ContentPillars";
 import { AccountSettings } from "@/components/AccountSettings";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
+import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 
 interface ToneScales {
@@ -299,6 +300,7 @@ const Index = () => {
           </div>
         </motion.div>
       </main>
+      <Footer />
     </div>
   );
 };
