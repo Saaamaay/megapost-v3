@@ -62,6 +62,10 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
+      logStep("Raw subscription period end", { 
+        current_period_end: subscription.current_period_end,
+        type: typeof subscription.current_period_end 
+      });
       if (subscription.current_period_end) {
         subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       }
