@@ -21,7 +21,14 @@ interface SubscriptionData {
 
 async function fetchSubscription(): Promise<SubscriptionData> {
   const { data, error } = await supabase.functions.invoke("check-subscription");
-  if (error) throw error;
+  // Treat auth errors as "not subscribed" instead of throwing
+  if (error) {
+    const msg = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);
+    if (msg.includes("Unauthorized") || msg.includes("Auth session missing") || msg.includes("401")) {
+      return { subscribed: false, product_id: null, subscription_end: null };
+    }
+    throw error;
+  }
   return {
     subscribed: data.subscribed ?? false,
     product_id: data.product_id ?? null,
