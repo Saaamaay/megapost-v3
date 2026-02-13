@@ -174,7 +174,13 @@ export function AccountSettings() {
             </div>
           </div>
 
-          {isPro ? (
+          {subLoading ? (
+            <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3 animate-pulse">
+              <div className="h-6 w-32 bg-muted rounded" />
+              <div className="h-4 w-48 bg-muted rounded" />
+              <div className="h-9 w-40 bg-muted rounded" />
+            </div>
+          ) : isPro ? (
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-primary" />
@@ -209,7 +215,6 @@ export function AccountSettings() {
               <Button
                 onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
                 className="w-full"
-                disabled={subLoading}
               >
                 <Crown className="w-4 h-4" />
                 Upgrade to Pro
