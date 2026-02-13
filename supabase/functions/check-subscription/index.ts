@@ -62,12 +62,15 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      logStep("Raw subscription period end", { 
-        current_period_end: subscription.current_period_end,
-        type: typeof subscription.current_period_end 
+      logStep("Subscription keys", { keys: Object.keys(subscription).filter(k => k.includes("period") || k.includes("end") || k.includes("current")) });
+      logStep("Full subscription snippet", { 
+        current_period_end: (subscription as any).current_period_end,
+        current_period_start: (subscription as any).current_period_start,
       });
-      if (subscription.current_period_end) {
-        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      // Try multiple possible field names
+      const periodEnd = (subscription as any).current_period_end;
+      if (periodEnd) {
+        subscriptionEnd = new Date(periodEnd * 1000).toISOString();
       }
       productId = subscription.items.data[0].price.product as string;
       logStep("Active subscription found", { productId, subscriptionEnd });
