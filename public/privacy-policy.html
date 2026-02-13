@@ -80,5 +80,43 @@ word-break: break-word !important;
         <!-- TERMLY_HTML_GOES_HERE -->
       </div>
     </main>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var body = document.querySelector('[data-custom-class="body"]');
+        if (!body) return;
+
+        // Helper: build regex that matches text even with HTML tags interspersed
+        function flexReplace(html, plainSearch, replacement) {
+          // Escape regex special chars, then allow optional HTML tags between each char
+          var pattern = plainSearch.split('').map(function(ch) {
+            return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          }).join('(?:<[^>]*>)*');
+          return html.replace(new RegExp(pattern, 'gi'), replacement);
+        }
+
+        var html = body.innerHTML;
+
+        // 1. Remove Cookie Notice placeholders and dangling references
+        html = html.replace(/Cookie Notice[\s\S]*?_{5,}[\s\S]*?\./gi, 'Cookie Notice.');
+        // Remove "For further information, please see our Cookie Notice:" with empty link
+        html = html.replace(/For further information[\s\S]*?Cookie Notice[\s\S]*?\.\s*/gi, '');
+
+        // 2. Fix social login: Facebook/X → Google
+        html = flexReplace(html, 'like your Facebook, X, or other social media account', 'like your Google account');
+        html = flexReplace(html, 'your Facebook or X logins', 'your Google login');
+        html = flexReplace(html, 'like your Facebook, X, or other social media account details', 'like your Google account details');
+
+        // 3. Remove "Data Analytics Services" list items
+        html = html.replace(/<li[^>]*>[\s\S]*?Data Analytics Services[\s\S]*?<\/li>/gi, '');
+
+        // 4. Fix advertising/tracking language
+        html = html.replace(
+          /We also permit third parties and service providers to use online tracking technologies on our Services for analytics and advertising[\s\S]*?other websites\./g,
+          'We do not use third-party tracking technologies for advertising or targeted marketing purposes. We only use essential cookies and similar technologies required for the proper functioning of our Services, such as maintaining your session and authentication state.'
+        );
+
+        body.innerHTML = html;
+      });
+    </script>
   </body>
 </html>
