@@ -69,15 +69,14 @@ export function AccountSettings() {
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
-      // Delete all user data first, then sign out
-      // Note: Full account deletion requires admin privileges
-      // For now, we sign the user out and show a message
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.functions.invoke("delete-account");
       if (error) {
         toast.error("Failed to delete account");
-      } else {
-        toast.success("Your account has been scheduled for deletion. You've been signed out.");
+        return;
       }
+      // Sign out locally after server-side deletion
+      await supabase.auth.signOut();
+      toast.success("Your account and all data have been permanently deleted.");
     } catch {
       toast.error("Something went wrong");
     } finally {
