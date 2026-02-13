@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,10 @@ export default function Auth() {
   
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = isLogin ? "Sign In — Megapost" : "Sign Up — Megapost";
+  }, [isLogin]);
 
   // Redirect if already logged in
   useEffect(() => {
