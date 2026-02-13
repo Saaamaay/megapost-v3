@@ -33,7 +33,7 @@ export function useSubscription() {
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
     queryKey: ["subscription", session?.user?.id],
     queryFn: fetchSubscription,
     enabled: !!session,
@@ -72,7 +72,7 @@ export function useSubscription() {
     subscribed,
     productId,
     subscriptionEnd,
-    loading: !session ? false : isLoading,
+    loading: !session ? false : (isLoading || isPlaceholderData),
     isPro: subscribed && productId === PLANS.pro.product_id,
     checkSubscription,
     startCheckout,
