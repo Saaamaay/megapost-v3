@@ -40,13 +40,12 @@ export function useSubscription() {
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["subscription", session?.user?.id],
     queryFn: fetchSubscription,
     enabled: !!session,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     refetchInterval: 60_000,
-    placeholderData: { subscribed: false, product_id: null, subscription_end: null },
   });
 
   const subscribed = data?.subscribed ?? false;
@@ -79,7 +78,7 @@ export function useSubscription() {
     subscribed,
     productId,
     subscriptionEnd,
-    loading: !session ? false : (isLoading || isPlaceholderData),
+    loading: !session ? false : isLoading,
     isPro: subscribed && productId === PLANS.pro.product_id,
     checkSubscription,
     startCheckout,
