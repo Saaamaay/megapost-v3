@@ -62,9 +62,8 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      const endTimestamp = Number(subscription.current_period_end);
-      if (!isNaN(endTimestamp) && isFinite(endTimestamp)) {
-        subscriptionEnd = new Date(endTimestamp * 1000).toISOString();
+      if (subscription.current_period_end) {
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       }
       productId = subscription.items.data[0].price.product as string;
       logStep("Active subscription found", { productId, subscriptionEnd });
