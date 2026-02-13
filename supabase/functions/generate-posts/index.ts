@@ -73,9 +73,9 @@ serve(async (req) => {
   try {
     const { platforms, description, voiceProfile, voiceProfileId, imageBase64, useSmartFormats = true }: RequestBody = await req.json();
     
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
     }
 
     // Get user's performance data to improve generation - PLATFORM SPECIFIC
@@ -348,16 +348,16 @@ Return JSON like: {"posts": {"linkedin": "post content...", "instagram": "post c
       userContent[0].text = `Look at this image and ${userContent[0].text}. Reference what you see in the image to make posts more specific and engaging.`;
     }
 
-    console.log("Calling Lovable AI Gateway for platforms:", platforms);
+    console.log("Calling Google Gemini API for platforms:", platforms);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userContent }

@@ -18,9 +18,9 @@ serve(async (req) => {
   try {
     const { businessType, businessDescription } = await req.json() as RequestBody;
     
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new Error("LOVABLE_API_KEY not configured");
+      throw new Error("GEMINI_API_KEY not configured");
     }
 
     const systemPrompt = `You are a social media content strategist helping a founder/business owner develop a balanced content mix.
@@ -51,16 +51,14 @@ Example response for a coffee shop:
   {"emoji": "📍", "title": "Local love", "description": "Supporting your neighborhood, collaborations with local businesses"}
 ]`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": Deno.env.get("SUPABASE_URL") || "",
-        "X-Title": "Initial Content Pillars Generator",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Business type: ${businessType}\nBusiness description: ${businessDescription}` }
