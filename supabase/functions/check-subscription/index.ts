@@ -62,24 +62,8 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      const subAny = subscription as any;
-      logStep("Subscription all keys", { keys: Object.keys(subscription).sort() });
-      logStep("Subscription billing fields", {
-        billing_cycle_anchor: subAny.billing_cycle_anchor,
-        start_date: subAny.start_date,
-        trial_end: subAny.trial_end,
-        ended_at: subAny.ended_at,
-        cancel_at: subAny.cancel_at,
-      });
-      // Try to find period end from items or invoice
       const item0 = subscription.items.data[0];
-      logStep("Item keys", { keys: Object.keys(item0).sort() });
-      logStep("Item fields", {
-        current_period_end: (item0 as any).current_period_end,
-        current_period_start: (item0 as any).current_period_start,
-      });
-      
-      const periodEnd = (item0 as any).current_period_end ?? subAny.current_period_end;
+      const periodEnd = (item0 as any).current_period_end ?? (subscription as any).current_period_end;
       if (periodEnd) {
         subscriptionEnd = new Date(periodEnd * 1000).toISOString();
       }
