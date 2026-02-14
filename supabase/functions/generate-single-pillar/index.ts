@@ -19,9 +19,9 @@ serve(async (req) => {
   try {
     const { businessType, businessDescription, existingPillars } = await req.json() as RequestBody;
     
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY not configured");
+      throw new Error("LOVABLE_API_KEY not configured");
     }
 
     const existingList = existingPillars.map(p => `- ${p}`).join('\n');
@@ -55,14 +55,14 @@ Example response:
   {"emoji": "🎙️", "title": "Industry hot takes", "description": "Your unfiltered opinions on trends and news in your space"}
 ]`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-2.5-flash",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Business type: ${businessType}\nBusiness description: ${businessDescription}\n\nSuggest ONE new content pillar that fills a gap in their current strategy.` }
