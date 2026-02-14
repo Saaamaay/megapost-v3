@@ -45,12 +45,13 @@ interface VoiceSetupProps {
 const employeeOptions = ["Just me", "2-10", "11-50", "51-200", "200+"];
 const businessTypes = [
   "Professional Services",
-  "Retail / E-commerce",
+  "Retail & E-commerce",
   "Food & Hospitality",
-  "Creative / Agency",
-  "Tech / SaaS",
+  "Tech & SaaS",
   "Health & Wellness",
   "Education",
+  "Influencer",
+  "Creative",
   "Other"
 ];
 
