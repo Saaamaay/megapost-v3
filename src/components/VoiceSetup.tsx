@@ -50,8 +50,8 @@ const businessTypes = [
   "Tech & SaaS",
   "Health & Wellness",
   "Education",
-  "Influencer",
-  "Creative",
+  "Content Creation",
+  "Art & Entertainment",
   "Other"
 ];
 
