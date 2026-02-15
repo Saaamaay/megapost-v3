@@ -346,7 +346,7 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                 className="space-y-4"
               >
                 <p className="text-sm text-muted-foreground mb-4">
-                  Complete up to 3 "We believe..." statements that capture what makes your brand different. These will help make your posts more distinctive and opinionated.
+                  "We believe..." statements capture what makes your brand different. These will help make your posts more distinctive and opinionated.
                 </p>
                 
                 {[0, 1, 2].map((index) => (
