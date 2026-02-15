@@ -302,6 +302,112 @@ const Index = () => {
           <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl border border-border p-8 md:p-12 overflow-hidden">
             {/* Subtle glow */}
             <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-accent/8 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Decorative swirly arrows — left */}
+            <motion.svg
+              initial={{ opacity: 0, pathLength: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 w-16 md:w-24 h-32 md:h-48 text-primary/15 hidden sm:block pointer-events-none"
+              viewBox="0 0 80 160"
+              fill="none"
+            >
+              <motion.path
+                d="M60 10 C20 30, 10 60, 40 80 C70 100, 20 130, 30 150"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, delay: 0.6, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M25 142 L30 150 L38 144"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 2 }}
+              />
+            </motion.svg>
+
+            {/* Decorative swirly arrows — right */}
+            <motion.svg
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-16 md:w-24 h-32 md:h-48 text-primary/15 hidden sm:block pointer-events-none"
+              viewBox="0 0 80 160"
+              fill="none"
+            >
+              <motion.path
+                d="M20 150 C60 130, 70 100, 40 80 C10 60, 60 30, 50 10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, delay: 0.8, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M55 18 L50 10 L42 16"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 2.2 }}
+              />
+            </motion.svg>
+
+            {/* Looping arrow under badges */}
+            <motion.svg
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+              className="mx-auto mt-6 w-48 md:w-64 h-10 text-primary/20 pointer-events-none"
+              viewBox="0 0 240 40"
+              fill="none"
+            >
+              <motion.path
+                d="M30 8 C80 35, 160 35, 210 8"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.2, delay: 1, ease: "easeInOut" }}
+              />
+              <motion.path
+                d="M205 15 L210 8 L203 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 2.1 }}
+              />
+            </motion.svg>
 
             <div className="relative z-10 max-w-2xl mx-auto text-center">
               <motion.div
