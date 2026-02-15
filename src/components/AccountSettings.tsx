@@ -32,7 +32,7 @@ const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }>
     highlight: true,
   },
   professional: {
-    features: ["Unlimited post generation", "All 5 platforms", "Up to 3 profiles", "Content pillars", "Priority support"],
+    features: ["Unlimited post generation", "All 5 platforms", "Up to 3 profiles", "Content pillars"],
   },
 };
 
