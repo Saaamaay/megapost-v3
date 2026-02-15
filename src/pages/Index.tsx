@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Palette, Clock, User } from "lucide-react";
+import { Sparkles, Zap, Palette, Clock, ThumbsUp, ThumbsDown, Flame } from "lucide-react";
 import { HowItWorks } from "@/components/HowItWorks";
 import { PricingSection } from "@/components/PricingSection";
 import { FAQ } from "@/components/FAQ";
@@ -251,7 +251,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-24"
+          className="grid md:grid-cols-3 gap-6 mt-24"
         >
           {[
             {
@@ -268,11 +268,6 @@ const Index = () => {
               icon: Clock,
               title: "Your Voice, Always",
               description: "AI that learns your style and writes like you—not a robot.",
-            },
-            {
-              icon: User,
-              title: "Smart Feedback Loop",
-              description: "Rate posts as 'Nailed it' or 'Not my voice' and mark top performers—so every post gets better.",
             },
           ].map((feature, index) => (
             <motion.div
@@ -295,6 +290,60 @@ const Index = () => {
 
         {/* How it works — shown to everyone */}
         <HowItWorks />
+
+        {/* Smart Feedback Loop highlight */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mt-24"
+        >
+          <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl border border-border p-8 md:p-12 overflow-hidden">
+            {/* Subtle glow */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-2xl mx-auto text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
+              >
+                <Sparkles className="w-4 h-4" />
+                Teach the AI your voice
+              </motion.div>
+
+              <h2 className="font-display text-2xl md:text-3xl font-extrabold text-foreground mb-4">
+                Smart Feedback Loop
+              </h2>
+              <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+                Rate every post so the AI learns what sounds like you—and what doesn't.
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-4">
+                {[
+                  { icon: ThumbsUp, label: "Nailed it", color: "text-green-500", bg: "bg-green-500/10 border-green-500/20" },
+                  { icon: ThumbsDown, label: "Not my voice", color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
+                  { icon: Flame, label: "Mark as hit", color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                    className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border ${item.bg} hover-scale cursor-default`}
+                  >
+                    <item.icon className={`w-5 h-5 ${item.color}`} />
+                    <span className="font-medium text-foreground text-sm">{item.label}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Visitor-only sections */}
         {!user && (
