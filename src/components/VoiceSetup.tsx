@@ -373,7 +373,7 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                 ))}
                 
                 <p className="text-xs text-muted-foreground/70 mt-2">
-                  These are optional — you can always add them later.
+                  These are optional — you can always add them later. Or just fill in one or two for now.
                 </p>
                 <p className="text-sm text-muted-foreground mt-3">
                   💡 Tip: Good beliefs are opinionated—they might even turn some people off, and that's okay!
