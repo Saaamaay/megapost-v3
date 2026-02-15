@@ -439,7 +439,9 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
               maxLength={2000}
               className="w-full h-32 px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
             />
-            <span className="text-xs text-muted-foreground mt-1 block text-right">{description.length}/2,000</span>
+            {description.length >= 2000 && (
+              <span className="text-xs text-amber-500 mt-1 block">Character limit reached</span>
+            )}
           </div>
 
           <div className="space-y-4">
