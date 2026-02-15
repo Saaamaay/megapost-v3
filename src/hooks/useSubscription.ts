@@ -66,6 +66,7 @@ interface SubscriptionData {
   subscribed: boolean;
   product_id: string | null;
   subscription_end: string | null;
+  user_created_at: string | null;
 }
 
 async function fetchSubscription(): Promise<SubscriptionData> {
@@ -73,7 +74,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
   if (error) {
     const msg = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);
     if (msg.includes("Unauthorized") || msg.includes("Auth session missing") || msg.includes("401")) {
-      return { subscribed: false, product_id: null, subscription_end: null };
+      return { subscribed: false, product_id: null, subscription_end: null, user_created_at: null };
     }
     throw error;
   }
@@ -81,6 +82,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
     subscribed: data.subscribed ?? false,
     product_id: data.product_id ?? null,
     subscription_end: data.subscription_end ?? null,
+    user_created_at: data.user_created_at ?? null,
   };
 }
 
@@ -99,12 +101,22 @@ export function useSubscription() {
   const subscribed = data?.subscribed ?? false;
   const productId = data?.product_id ?? null;
   const subscriptionEnd = data?.subscription_end ?? null;
+  const userCreatedAt = data?.user_created_at ?? null;
   const tier = resolveTier(subscribed, productId);
 
   const isPaid = tier !== "free";
   const currentPlan = tier === "free" ? null : PLANS[tier];
   const maxProfiles = currentPlan?.maxProfiles ?? FREE_PLAN.maxProfiles;
   const maxPlatforms = currentPlan?.maxPlatforms ?? FREE_PLAN.maxPlatforms;
+
+  // Trial logic: 7 days from signup
+  const trialEndsAt = userCreatedAt
+    ? new Date(new Date(userCreatedAt).getTime() + FREE_PLAN.trialDays * 24 * 60 * 60 * 1000)
+    : null;
+  const trialExpired = !isPaid && trialEndsAt ? new Date() > trialEndsAt : false;
+  const trialDaysLeft = !isPaid && trialEndsAt
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : null;
 
   const checkSubscription = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["subscription"] });
@@ -139,6 +151,9 @@ export function useSubscription() {
     isPro: isPaid, // backward compat
     maxProfiles,
     maxPlatforms,
+    trialExpired,
+    trialDaysLeft,
+    trialEndsAt,
     checkSubscription,
     startCheckout,
     openPortal,
