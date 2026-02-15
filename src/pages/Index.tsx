@@ -291,34 +291,35 @@ const Index = () => {
         {/* How it works — shown to everyone */}
         <HowItWorks />
 
-        {/* Platform showcase */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1 }}
-          className="mt-24 text-center"
-        >
-          <p className="text-sm font-medium text-muted-foreground mb-6">
-            Works with all major platforms
-          </p>
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 items-center opacity-60">
-            <span className="text-linkedin font-semibold">LinkedIn</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-instagram font-semibold">Instagram</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-facebook font-semibold">Facebook</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-twitter font-semibold">X / Twitter</span>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-foreground font-semibold">TikTok</span>
-          </div>
-        </motion.div>
-
         {/* Visitor-only sections */}
         {!user && (
           <>
             <PricingSection onGetStarted={handleGetStarted} />
+
+            {/* Platform showcase */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="mt-24 text-center"
+            >
+              <p className="text-sm font-medium text-muted-foreground mb-6">
+                Works with all major platforms
+              </p>
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 items-center opacity-60">
+                <span className="text-linkedin font-semibold">LinkedIn</span>
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="text-instagram font-semibold">Instagram</span>
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="text-facebook font-semibold">Facebook</span>
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="text-twitter font-semibold">X / Twitter</span>
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="text-foreground font-semibold">TikTok</span>
+              </div>
+            </motion.div>
+
             <FAQ />
             <BottomCTA onGetStarted={handleGetStarted} hasProfile={false} />
           </>
