@@ -355,7 +355,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 </div>
                 <Progress value={trialDaysLeft !== null ? ((7 - trialDaysLeft) / 7) * 100 : 0} className="h-2" />
                 <p className="text-xs text-muted-foreground">
-                  Upgrade for unlimited generation across all platforms.
+                  Subscribe to keep creating after your trial ends.
                 </p>
               </>
             ) : (
