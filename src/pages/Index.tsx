@@ -245,15 +245,19 @@ const Index = () => {
           </motion.div>
 
           {user && voiceProfile && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="mt-4 text-sm text-muted-foreground"
+              className="mt-6 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-card border border-border shadow-sm"
             >
-              <User className="w-4 h-4 inline mr-1" />
-              Your voice profile is ready
-            </motion.p>
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm text-foreground font-medium">
+                Welcome back, {voiceProfile.profileName || "there"}!
+              </span>
+            </motion.div>
           )}
         </div>
 
@@ -309,7 +313,7 @@ const Index = () => {
           <p className="text-sm font-medium text-muted-foreground mb-6">
             Works with all major platforms
           </p>
-          <div className="flex justify-center gap-8 items-center opacity-60">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 items-center opacity-60">
             <span className="text-linkedin font-semibold">LinkedIn</span>
             <span className="w-1 h-1 rounded-full bg-border" />
             <span className="text-instagram font-semibold">Instagram</span>
@@ -317,13 +321,17 @@ const Index = () => {
             <span className="text-facebook font-semibold">Facebook</span>
             <span className="w-1 h-1 rounded-full bg-border" />
             <span className="text-twitter font-semibold">X / Twitter</span>
+            <span className="w-1 h-1 rounded-full bg-border" />
+            <span className="text-foreground font-semibold">TikTok</span>
           </div>
         </motion.div>
+
+        {/* How it works — shown to everyone */}
+        <HowItWorks />
 
         {/* Visitor-only sections */}
         {!user && (
           <>
-            <HowItWorks />
             <PricingSection onGetStarted={handleGetStarted} />
             <FAQ />
             <BottomCTA onGetStarted={handleGetStarted} hasProfile={false} />
