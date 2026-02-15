@@ -373,7 +373,7 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                 ))}
                 
                 <p className="text-sm text-muted-foreground mt-4">
-                  💡 Tip: Good beliefs are opinionated—they might even turn some people off, and that's okay!
+                  💡 Tip: Good beliefs are opinionated—they might even turn some people off, and that's okay! Can't think of anything right now? No worries—leave these blank and fill them out later.
                 </p>
               </motion.div>
             )}
