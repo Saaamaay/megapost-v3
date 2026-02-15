@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { Linkedin, Instagram, Facebook, Twitter, Check } from "lucide-react";
+import { Linkedin, Instagram, Facebook, Twitter, Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // TikTok icon (not in lucide-react)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -60,42 +61,57 @@ const platforms: PlatformOption[] = [
 interface PlatformSelectorProps {
   selected: Platform[];
   onToggle: (platform: Platform) => void;
+  maxPlatforms?: number;
 }
 
-export function PlatformSelector({ selected, onToggle }: PlatformSelectorProps) {
+export function PlatformSelector({ selected, onToggle, maxPlatforms = 5 }: PlatformSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-3">
-      {platforms.map((platform) => {
-        const isSelected = selected.includes(platform.id);
-        return (
-          <motion.button
-            key={platform.id}
-            onClick={() => onToggle(platform.id)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium",
-              isSelected
-                ? cn(platform.bgClass, platform.colorClass)
-                : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
-            )}
-          >
-            <span className={cn(isSelected && platform.colorClass)}>
-              {platform.icon}
-            </span>
-            <span>{platform.name}</span>
-            {isSelected && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className={cn("ml-1", platform.colorClass)}
-              >
-                <Check className="w-4 h-4" />
-              </motion.span>
-            )}
-          </motion.button>
-        );
-      })}
-    </div>
+    <TooltipProvider>
+      <div className="flex flex-wrap gap-3">
+        {platforms.map((platform) => {
+          const isSelected = selected.includes(platform.id);
+          const isLocked = !isSelected && maxPlatforms <= selected.length && maxPlatforms < 5;
+
+          return (
+            <Tooltip key={platform.id}>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={() => !isLocked && onToggle(platform.id)}
+                  whileHover={isLocked ? {} : { scale: 1.02 }}
+                  whileTap={isLocked ? {} : { scale: 0.98 }}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium",
+                    isLocked
+                      ? "border-border bg-muted/30 text-muted-foreground/50 cursor-not-allowed"
+                      : isSelected
+                        ? cn(platform.bgClass, platform.colorClass)
+                        : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
+                  )}
+                >
+                  <span className={cn(isSelected && platform.colorClass, isLocked && "opacity-40")}>
+                    {isLocked ? <Lock className="w-5 h-5" /> : platform.icon}
+                  </span>
+                  <span>{platform.name}</span>
+                  {isSelected && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className={cn("ml-1", platform.colorClass)}
+                    >
+                      <Check className="w-4 h-4" />
+                    </motion.span>
+                  )}
+                </motion.button>
+              </TooltipTrigger>
+              {isLocked && (
+                <TooltipContent>
+                  <p>Upgrade to Premium for all platforms</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }

@@ -3,15 +3,64 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export const PLANS = {
-  pro: {
+export type SubscriptionTier = "free" | "standard" | "premium" | "professional";
+
+export interface PlanConfig {
+  price_id: string;
+  product_id: string;
+  name: string;
+  price: string;
+  interval: string;
+  maxProfiles: number;
+  maxPlatforms: number;
+}
+
+export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
+  standard: {
+    price_id: "price_1T18qsCYzAdXKBHt1wgq6e6s",
+    product_id: "prod_Tz75rum2BC2w3m",
+    name: "Standard",
+    price: "£10",
+    interval: "month",
+    maxProfiles: 1,
+    maxPlatforms: 1,
+  },
+  premium: {
     price_id: "price_1T07zqCYzAdXKBHty3g6o67K",
     product_id: "prod_Ty48vtBStymfFT",
-    name: "Pro Plan",
+    name: "Premium",
     price: "£20",
     interval: "month",
+    maxProfiles: 1,
+    maxPlatforms: 5,
+  },
+  professional: {
+    price_id: "price_1T18rACYzAdXKBHta3HGFKEu",
+    product_id: "prod_Tz750SlWIfTKtU",
+    name: "Professional",
+    price: "£30",
+    interval: "month",
+    maxProfiles: 3,
+    maxPlatforms: 5,
   },
 } as const;
+
+export const FREE_PLAN = {
+  name: "Free",
+  price: "£0",
+  maxProfiles: 1,
+  maxPlatforms: 1,
+  maxPostsPerDay: 3,
+  trialDays: 7,
+} as const;
+
+function resolveTier(subscribed: boolean, productId: string | null): SubscriptionTier {
+  if (!subscribed || !productId) return "free";
+  for (const [tier, plan] of Object.entries(PLANS)) {
+    if (plan.product_id === productId) return tier as SubscriptionTier;
+  }
+  return "free";
+}
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -21,7 +70,6 @@ interface SubscriptionData {
 
 async function fetchSubscription(): Promise<SubscriptionData> {
   const { data, error } = await supabase.functions.invoke("check-subscription");
-  // Treat auth errors as "not subscribed" instead of throwing
   if (error) {
     const msg = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);
     if (msg.includes("Unauthorized") || msg.includes("Auth session missing") || msg.includes("401")) {
@@ -51,14 +99,21 @@ export function useSubscription() {
   const subscribed = data?.subscribed ?? false;
   const productId = data?.product_id ?? null;
   const subscriptionEnd = data?.subscription_end ?? null;
+  const tier = resolveTier(subscribed, productId);
+
+  const isPaid = tier !== "free";
+  const currentPlan = tier === "free" ? null : PLANS[tier];
+  const maxProfiles = currentPlan?.maxProfiles ?? FREE_PLAN.maxProfiles;
+  const maxPlatforms = currentPlan?.maxPlatforms ?? FREE_PLAN.maxPlatforms;
 
   const checkSubscription = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["subscription"] });
   }, [queryClient]);
 
-  const startCheckout = async (priceId: string = PLANS.pro.price_id) => {
+  const startCheckout = async (priceId?: string) => {
+    const id = priceId ?? PLANS.premium.price_id;
     const { data, error } = await supabase.functions.invoke("create-checkout", {
-      body: { priceId },
+      body: { priceId: id },
     });
     if (error) throw error;
     if (data?.url) {
@@ -79,7 +134,11 @@ export function useSubscription() {
     productId,
     subscriptionEnd,
     loading: !session ? false : isLoading,
-    isPro: subscribed && productId === PLANS.pro.product_id,
+    tier,
+    isPaid,
+    isPro: isPaid, // backward compat
+    maxProfiles,
+    maxPlatforms,
     checkSubscription,
     startCheckout,
     openPortal,

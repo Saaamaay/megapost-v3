@@ -47,7 +47,7 @@ const Index = () => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success") {
       checkSubscription();
-      toast.success("Welcome to Pro! Your subscription is now active.");
+      toast.success("Welcome! Your subscription is now active.");
       setSearchParams({}, { replace: true });
     } else if (checkout === "cancelled") {
       setSearchParams({}, { replace: true });

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, LogOut, Check, Crown } from "lucide-react";
+import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, Check, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,14 +18,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { useSubscription, PLANS } from "@/hooks/useSubscription";
+import { useSubscription, PLANS, FREE_PLAN, type SubscriptionTier } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }> = {
+  standard: {
+    features: ["Unlimited post generation", "1 platform", "1 business profile"],
+  },
+  premium: {
+    features: ["Unlimited post generation", "All 5 platforms", "1 business profile", "Content pillars"],
+    highlight: true,
+  },
+  professional: {
+    features: ["Unlimited post generation", "All 5 platforms", "Up to 3 profiles", "Content pillars", "Priority support"],
+  },
+};
 
 export function AccountSettings() {
   const { user, signOut } = useAuth();
-  const { isPro, subscribed, subscriptionEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
-  const [currentPassword, setCurrentPassword] = useState("");
+  const { tier, subscribed, subscriptionEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -47,15 +60,11 @@ export function AccountSettings() {
 
     setIsChangingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) {
         toast.error(error.message);
       } else {
         toast.success("Password updated successfully!");
-        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       }
@@ -74,7 +83,6 @@ export function AccountSettings() {
         toast.error("Failed to delete account");
         return;
       }
-      // Sign out locally after server-side deletion
       await supabase.auth.signOut();
       toast.success("Your account, data, and subscription have been permanently deleted.");
     } catch {
@@ -84,6 +92,8 @@ export function AccountSettings() {
     }
   };
 
+  const isPaid = tier !== "free";
+
   return (
     <main className="max-w-2xl mx-auto px-6 py-10">
       <motion.div
@@ -92,12 +102,8 @@ export function AccountSettings() {
         className="space-y-8"
       >
         <div>
-          <h1 className="font-display font-bold text-2xl text-foreground">
-            Account Settings
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Manage your account, billing, and preferences.
-          </p>
+          <h1 className="font-display font-bold text-2xl text-foreground">Account Settings</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage your account, billing, and preferences.</p>
         </div>
 
         {/* Profile Basics */}
@@ -128,41 +134,17 @@ export function AccountSettings() {
                 <Lock className="w-4 h-4 text-muted-foreground" />
                 <Label className="text-sm font-medium text-foreground">Change Password</Label>
               </div>
-              <Input
-                type="password"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="rounded-xl"
-              />
-              <Input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="rounded-xl"
-              />
-              <Button
-                onClick={handleChangePassword}
-                disabled={isChangingPassword || !newPassword.trim()}
-                size="sm"
-              >
-                {isChangingPassword ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update Password"
-                )}
+              <Input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl" />
+              <Input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="rounded-xl" />
+              <Button onClick={handleChangePassword} disabled={isChangingPassword || !newPassword.trim()} size="sm">
+                {isChangingPassword ? (<><Loader2 className="w-4 h-4 animate-spin" />Updating...</>) : "Update Password"}
               </Button>
             </div>
           </div>
         </section>
 
-
         {/* Subscription & Billing */}
-        <section className="bg-card rounded-2xl border border-border p-6 space-y-4">
+        <section className="bg-card rounded-2xl border border-border p-6 space-y-5">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-primary/10">
               <CreditCard className="w-5 h-5 text-primary" />
@@ -174,51 +156,100 @@ export function AccountSettings() {
           </div>
 
           {subLoading ? (
-            <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3 animate-pulse">
-              <div className="h-6 w-32 bg-muted rounded" />
-              <div className="h-4 w-48 bg-muted rounded" />
-              <div className="h-9 w-40 bg-muted rounded" />
-            </div>
-          ) : isPro ? (
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
-              <div className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-primary" />
-                <span className="font-semibold text-foreground">Pro Plan</span>
-                <span className="ml-auto text-sm text-muted-foreground">
-                  {subscriptionEnd && `Renews ${new Date(subscriptionEnd).toLocaleDateString()}`}
-                </span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => openPortal().catch(() => toast.error("Failed to open billing portal"))}>
-                Manage Subscription
-              </Button>
+            <div className="grid gap-4 md:grid-cols-3 animate-pulse">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+                  <div className="h-6 w-24 bg-muted rounded" />
+                  <div className="h-8 w-16 bg-muted rounded" />
+                  <div className="h-4 w-32 bg-muted rounded" />
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">Free Plan</p>
-                  <p className="text-sm text-muted-foreground">Limited features</p>
+            <>
+              {/* Current plan banner for paid users */}
+              {isPaid && (
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-5 h-5 text-primary" />
+                    <span className="font-semibold text-foreground capitalize">{tier} Plan</span>
+                    {subscriptionEnd && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => openPortal().catch(() => toast.error("Failed to open billing portal"))}>
+                    Manage Subscription
+                  </Button>
                 </div>
-                <div className="text-right">
-                  <p className="font-display font-bold text-2xl text-foreground">{PLANS.pro.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                </div>
+              )}
+
+              {/* Pricing cards */}
+              <div className="grid gap-4 md:grid-cols-3">
+                {(Object.entries(PLANS) as [Exclude<SubscriptionTier, "free">, typeof PLANS[keyof typeof PLANS]][]).map(([planKey, plan]) => {
+                  const isCurrent = tier === planKey;
+                  const tierInfo = TIER_FEATURES[planKey];
+                  const isHighlighted = tierInfo?.highlight;
+
+                  return (
+                    <div
+                      key={planKey}
+                      className={cn(
+                        "relative rounded-xl border p-5 space-y-4 transition-all",
+                        isCurrent
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                          : isHighlighted
+                            ? "border-primary/30 bg-card"
+                            : "border-border bg-card"
+                      )}
+                    >
+                      {isCurrent && (
+                        <span className="absolute -top-3 left-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                          Your Plan
+                        </span>
+                      )}
+                      {isHighlighted && !isCurrent && (
+                        <span className="absolute -top-3 left-4 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                          Most Popular
+                        </span>
+                      )}
+
+                      <div>
+                        <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
+                        <p className="font-display font-bold text-2xl text-foreground mt-1">
+                          {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                        </p>
+                      </div>
+
+                      <ul className="space-y-2 text-sm">
+                        {tierInfo?.features.map((f) => (
+                          <li key={f} className="flex items-center gap-2 text-muted-foreground">
+                            <Check className="w-4 h-4 text-primary shrink-0" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {isCurrent ? (
+                        <Button variant="outline" size="sm" className="w-full" disabled>
+                          Current Plan
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={isHighlighted ? "default" : "outline"}
+                          size="sm"
+                          className="w-full"
+                          onClick={() => startCheckout(plan.price_id).catch(() => toast.error("Failed to start checkout"))}
+                        >
+                          {isPaid ? "Switch Plan" : "Upgrade"}
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <ul className="space-y-2 text-sm">
-                {["Unlimited post generation", "All platforms", "Priority support", "Content pillars"].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
-                className="w-full"
-              >
-                <Crown className="w-4 h-4" />
-                Upgrade to Pro
-              </Button>
-            </div>
+            </>
           )}
         </section>
 
@@ -248,9 +279,7 @@ export function AccountSettings() {
                 <Switch disabled />
               </div>
             ))}
-            <p className="text-xs text-muted-foreground italic">
-              Notification preferences coming soon.
-            </p>
+            <p className="text-xs text-muted-foreground italic">Notification preferences coming soon.</p>
           </div>
         </section>
 

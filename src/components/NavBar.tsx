@@ -15,7 +15,7 @@ interface NavBarProps {
 
 export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProps) {
   const { user, loading, signOut, voiceProfile, allProfiles } = useAuth();
-  const { isPro } = useSubscription();
+  const { isPaid, tier } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -70,10 +70,10 @@ export function NavBar({ onNavigate, currentView, onAddNewBusiness }: NavBarProp
           <span className="font-display font-extrabold text-xl sm:text-2xl text-foreground tracking-tight">
             megapost<span className="text-primary">.ai</span>
           </span>
-          {isPro && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+          {isPaid && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase">
               <Crown className="w-3 h-3" />
-              PRO
+              {tier}
             </span>
           )}
         </button>
