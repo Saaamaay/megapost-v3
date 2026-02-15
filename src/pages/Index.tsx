@@ -251,7 +251,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="grid md:grid-cols-3 gap-6 mt-24"
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-24"
         >
           {[
             {
@@ -268,6 +268,11 @@ const Index = () => {
               icon: Clock,
               title: "Your Voice, Always",
               description: "AI that learns your style and writes like you—not a robot.",
+            },
+            {
+              icon: User,
+              title: "Smart Feedback Loop",
+              description: "Rate posts as 'Nailed it' or 'Not my voice' and mark top performers—so every post gets better.",
             },
           ].map((feature, index) => (
             <motion.div
