@@ -1,0 +1,1 @@
+ALTER TABLE public.voice_profiles ADD COLUMN locked_platform text DEFAULT NULL;
