@@ -197,7 +197,9 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                     maxLength={100}
                     className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
-                  
+                  {profile.profileName.length >= 100 && (
+                    <span className="text-xs text-amber-500 mt-1 block">Character limit reached</span>
+                  )}
                 </div>
 
                 <div>
@@ -213,7 +215,9 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                     maxLength={1000}
                     className="w-full h-24 px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   />
-                  
+                  {profile.business.length >= 1000 && (
+                    <span className="text-xs text-amber-500 mt-1 block">Character limit reached</span>
+                  )}
                 </div>
 
                 <div>
@@ -230,6 +234,9 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                     maxLength={200}
                     className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
+                  {profile.businessLocation.length >= 200 && (
+                    <span className="text-xs text-amber-500 mt-1 block">Character limit reached</span>
+                  )}
                 </div>
 
                 <div>
@@ -375,7 +382,9 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                       maxLength={300}
                       className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
-                    
+                    {(profile.brandBeliefs[index] || "").length >= 300 && (
+                      <span className="text-xs text-amber-500 mt-1 block">Character limit reached</span>
+                    )}
                   </div>
                 ))}
                 
