@@ -244,21 +244,6 @@ const Index = () => {
             </Button>
           </motion.div>
 
-          {user && voiceProfile && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-6 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-card border border-border shadow-sm"
-            >
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <User className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm text-foreground font-medium">
-                Welcome back, {voiceProfile.profileName || "there"}!
-              </span>
-            </motion.div>
-          )}
         </div>
 
         {/* Features */}
