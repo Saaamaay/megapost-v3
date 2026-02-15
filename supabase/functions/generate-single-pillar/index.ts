@@ -17,6 +17,34 @@ serve(async (req) => {
   }
 
   try {
+    // --- Abuse prevention: 30 pillar generations/day ---
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const adminClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        { auth: { persistSession: false } }
+      );
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await adminClient.auth.getUser(token);
+      const userId = userData?.user?.id;
+      if (userId) {
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await adminClient
+          .from("content_pillars")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .gte("created_at", dayAgo);
+        if ((count ?? 0) >= 30) {
+          return new Response(JSON.stringify({ error: "You've reached the daily content idea limit. Please try again tomorrow." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 429,
+          });
+        }
+      }
+    }
+
     const { businessType, businessDescription, existingPillars } = await req.json() as RequestBody;
     
     const apiKey = Deno.env.get("GEMINI_API_KEY");

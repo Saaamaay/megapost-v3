@@ -78,15 +78,60 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY is not configured");
     }
 
+    // --- Abuse prevention caps ---
+    const authHeader = req.headers.get("Authorization");
+    let userId: string | null = null;
+    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    if (authHeader) {
+      const { createClient: createAdminClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const adminClient = createAdminClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } });
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await adminClient.auth.getUser(token);
+      userId = userData?.user?.id || null;
+
+      if (userId) {
+        // Monthly post cap: 500
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { count: monthlyPosts } = await adminClient
+          .from("generated_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .gte("created_at", monthAgo);
+        
+        if ((monthlyPosts ?? 0) >= 500) {
+          return new Response(JSON.stringify({ error: "You've reached the monthly generation limit. Please try again next month or contact support." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 429,
+          });
+        }
+
+        // Daily regeneration cap: 50
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count: dailyPosts } = await adminClient
+          .from("generated_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .gte("created_at", dayAgo);
+        
+        if ((dailyPosts ?? 0) >= 50) {
+          return new Response(JSON.stringify({ error: "You've reached the daily generation limit. Please try again tomorrow." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 429,
+          });
+        }
+      }
+    }
+
     // Get user's performance data to improve generation - PLATFORM SPECIFIC
     const platformPerformance: Record<string, string> = {};
-    const authHeader = req.headers.get("Authorization");
     
     if (authHeader) {
       try {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-        const supabase = createClient(supabaseUrl, supabaseKey, {
+        const supabase = createClient(supabaseUrl, supabaseAnon, {
           global: { headers: { Authorization: authHeader } }
         });
 
