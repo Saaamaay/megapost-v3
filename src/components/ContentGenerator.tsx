@@ -56,8 +56,8 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [lastDescription, setLastDescription] = useState("");
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
-  const { canGenerate: hasPostsLeft, postsRemaining, freeLimit, isPro, loading: limitLoading, refreshCount } = usePostLimit();
-  const { startCheckout, maxPlatforms, tier, trialExpired, trialDaysLeft } = useSubscription();
+  const { canGenerate: hasPostsLeft, isPro, loading: limitLoading } = usePostLimit();
+  const { startCheckout, maxPlatforms, tier, trialExpired, trialDaysLeft, trialEndsAt } = useSubscription();
   const { refetchVoiceProfile } = useAuth();
   const isStandardTier = tier === "standard";
 
@@ -239,7 +239,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         }
         
         await savePosts(generatedPosts, description);
-        refreshCount();
+        
       }
     } catch (error) {
       console.error("Failed to generate posts:", error);
@@ -350,13 +350,10 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Free trial{trialDaysLeft !== null ? ` — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left` : ""} — {postsRemaining} post{postsRemaining !== 1 ? "s" : ""} left today
+                    Free trial{trialDaysLeft !== null ? ` — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left` : ""}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {postsRemaining} of {freeLimit} remaining
-                  </span>
                 </div>
-                <Progress value={((freeLimit - postsRemaining) / freeLimit) * 100} className="h-2" />
+                <Progress value={trialDaysLeft !== null ? ((7 - trialDaysLeft) / 7) * 100 : 0} className="h-2" />
                 <p className="text-xs text-muted-foreground">
                   Upgrade for unlimited generation across all platforms.
                 </p>
