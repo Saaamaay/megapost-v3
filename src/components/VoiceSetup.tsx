@@ -345,11 +345,8 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                 exit={{ opacity: 0 }}
                 className="space-y-4"
               >
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-sm text-muted-foreground mb-4">
                   Complete up to 3 "We believe..." statements that capture what makes your brand different. These will help make your posts more distinctive and opinionated.
-                </p>
-                <p className="text-xs text-muted-foreground/70 mb-4">
-                  These are optional — you can always add them later.
                 </p>
                 
                 {[0, 1, 2].map((index) => (
@@ -375,7 +372,10 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                   </div>
                 ))}
                 
-                <p className="text-sm text-muted-foreground mt-4">
+                <p className="text-xs text-muted-foreground/70 mt-2">
+                  These are optional — you can always add them later.
+                </p>
+                <p className="text-sm text-muted-foreground mt-3">
                   💡 Tip: Good beliefs are opinionated—they might even turn some people off, and that's okay!
                 </p>
               </motion.div>
