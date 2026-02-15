@@ -191,11 +191,13 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                     type="text"
                     value={profile.profileName}
                     onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, profileName: e.target.value }))
+                      setProfile((prev) => ({ ...prev, profileName: e.target.value.slice(0, 100) }))
                     }
                     placeholder="e.g., My Architecture Firm"
+                    maxLength={100}
                     className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
+                  <span className="text-xs text-muted-foreground mt-1 block text-right">{profile.profileName.length}/100</span>
                 </div>
 
                 <div>
@@ -205,11 +207,13 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                   <textarea
                     value={profile.business}
                     onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, business: e.target.value }))
+                      setProfile((prev) => ({ ...prev, business: e.target.value.slice(0, 1000) }))
                     }
                     placeholder="e.g., I run a boutique architecture firm specializing in sustainable residential design..."
+                    maxLength={1000}
                     className="w-full h-24 px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   />
+                  <span className="text-xs text-muted-foreground mt-1 block text-right">{profile.business.length}/1,000</span>
                 </div>
 
                 <div>
@@ -220,9 +224,10 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                     type="text"
                     value={profile.businessLocation}
                     onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, businessLocation: e.target.value }))
+                      setProfile((prev) => ({ ...prev, businessLocation: e.target.value.slice(0, 200) }))
                     }
                     placeholder="e.g., London, UK"
+                    maxLength={200}
                     className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
@@ -359,7 +364,7 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                       value={profile.brandBeliefs[index] || ""}
                       onChange={(e) => {
                         const newBeliefs = [...profile.brandBeliefs];
-                        newBeliefs[index] = e.target.value;
+                        newBeliefs[index] = e.target.value.slice(0, 300);
                         setProfile((prev) => ({ ...prev, brandBeliefs: newBeliefs }));
                       }}
                       placeholder={
@@ -367,8 +372,10 @@ export function VoiceSetup({ onComplete, onCancel, onDelete, initialProfile, isE
                         : index === 1 ? "e.g., sustainability isn't a trend—it's the future"
                         : "e.g., taking risks and learning from mistakes"
                       }
+                      maxLength={300}
                       className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
+                    <span className="text-xs text-muted-foreground mt-1 block text-right">{(profile.brandBeliefs[index] || "").length}/300</span>
                   </div>
                 ))}
                 
