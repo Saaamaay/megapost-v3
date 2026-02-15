@@ -55,6 +55,24 @@ serve(async (req) => {
     const userCreatedAt = userData.user.created_at;
     logStep("User authenticated", { email, createdAt: userCreatedAt });
 
+    // Check if this email was previously deleted (trial abuse prevention)
+    const encoder = new TextEncoder();
+    const hashData = encoder.encode(email.toLowerCase().trim());
+    const hashBuffer = await crypto.subtle.digest("SHA-256", hashData);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const emailHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+    const { data: deletedRecord } = await supabaseClient
+      .from("deleted_accounts")
+      .select("id")
+      .eq("email_hash", emailHash)
+      .limit(1);
+
+    const wasPreviouslyDeleted = deletedRecord && deletedRecord.length > 0;
+    if (wasPreviouslyDeleted) {
+      logStep("Previously deleted account detected — trial ineligible");
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email, limit: 1 });
 
@@ -95,6 +113,7 @@ serve(async (req) => {
       product_id: productId,
       subscription_end: subscriptionEnd,
       user_created_at: userCreatedAt,
+      trial_ineligible: wasPreviouslyDeleted,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

@@ -52,6 +52,24 @@ export type Database = {
           },
         ]
       }
+      deleted_accounts: {
+        Row: {
+          deleted_at: string
+          email_hash: string
+          id: string
+        }
+        Insert: {
+          deleted_at?: string
+          email_hash: string
+          id?: string
+        }
+        Update: {
+          deleted_at?: string
+          email_hash?: string
+          id?: string
+        }
+        Relationships: []
+      }
       generated_posts: {
         Row: {
           content: string
