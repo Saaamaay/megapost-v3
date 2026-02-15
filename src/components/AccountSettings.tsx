@@ -235,6 +235,15 @@ export function AccountSettings() {
                         <Button variant="outline" size="sm" className="w-full" disabled>
                           Current Plan
                         </Button>
+                      ) : isPaid ? (
+                        <Button
+                          variant={isHighlighted ? "default" : "outline"}
+                          size="sm"
+                          className="w-full"
+                          onClick={() => openPortal().catch(() => toast.error("Failed to open billing portal"))}
+                        >
+                          Manage Subscription
+                        </Button>
                       ) : (
                         <Button
                           variant={isHighlighted ? "default" : "outline"}
@@ -242,7 +251,7 @@ export function AccountSettings() {
                           className="w-full"
                           onClick={() => startCheckout(plan.price_id).catch(() => toast.error("Failed to start checkout"))}
                         >
-                          {isPaid ? "Switch Plan" : "Upgrade"}
+                          Upgrade
                         </Button>
                       )}
                     </div>
