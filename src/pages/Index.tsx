@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, Zap, Palette, Clock, User } from "lucide-react";
+import { HowItWorks } from "@/components/HowItWorks";
+import { PricingSection } from "@/components/PricingSection";
+import { FAQ } from "@/components/FAQ";
+import { BottomCTA } from "@/components/BottomCTA";
 import { Button } from "@/components/ui/button";
 import { VoiceSetup } from "@/components/VoiceSetup";
 import { ContentGenerator } from "@/components/ContentGenerator";
@@ -315,6 +319,18 @@ const Index = () => {
             <span className="text-twitter font-semibold">X / Twitter</span>
           </div>
         </motion.div>
+
+        {/* How it works */}
+        <HowItWorks />
+
+        {/* Pricing */}
+        <PricingSection onGetStarted={handleGetStarted} />
+
+        {/* FAQ */}
+        <FAQ />
+
+        {/* Bottom CTA */}
+        <BottomCTA onGetStarted={handleGetStarted} hasProfile={!!(user && voiceProfile)} />
       </main>
       <Footer />
     </div>
