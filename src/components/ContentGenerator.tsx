@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, Lightbulb, ImageIcon, Crown, Lock } from "lucide-react";
+import { PlanPickerDialog } from "./PlanPickerDialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ImageUpload, type ImageRanking } from "./ImageUpload";
@@ -54,6 +55,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [useFreeForm, setUseFreeForm] = useState(false);
   const [placeholder, setPlaceholder] = useState("");
   const [lastDescription, setLastDescription] = useState("");
+  const [showPlanPicker, setShowPlanPicker] = useState(false);
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
   const { canGenerate: hasPostsLeft, isPro, loading: limitLoading } = usePostLimit();
@@ -299,6 +301,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const canGenerate = platforms.length > 0 && description.trim().length > 0 && hasPostsLeft;
 
   return (
+    <>
     <main className="max-w-5xl mx-auto px-6 py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -338,7 +341,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                   </p>
                 </div>
                 <Button
-                  onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
+                  onClick={() => setShowPlanPicker(true)}
                   className="gap-2"
                 >
                   <Crown className="w-4 h-4" />
@@ -374,7 +377,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                   </p>
                 </div>
                 <Button
-                  onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
+                  onClick={() => setShowPlanPicker(true)}
                   className="gap-2"
                 >
                   <Crown className="w-4 h-4" />
@@ -531,5 +534,12 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
         <PostHistory key={historyKey} />
       </motion.div>
     </main>
+
+    <PlanPickerDialog
+      open={showPlanPicker}
+      onOpenChange={setShowPlanPicker}
+      onSelectPlan={(priceId) => startCheckout(priceId)}
+    />
+    </>
   );
 }
