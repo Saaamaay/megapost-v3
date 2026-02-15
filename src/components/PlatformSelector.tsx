@@ -119,7 +119,7 @@ export function PlatformSelector({ selected, onToggle, maxPlatforms = 5, lockedP
                         <Check className="w-4 h-4" />
                       </motion.span>
                     )}
-                    {isLockedToThis && isSelected && (
+                    {isLockedToThis && isSelected && isStandardTier && (
                       <Lock className="w-3 h-3 ml-1 opacity-50" />
                     )}
                   </motion.button>
