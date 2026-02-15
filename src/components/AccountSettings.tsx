@@ -38,7 +38,7 @@ const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }>
 
 export function AccountSettings() {
   const { user, signOut } = useAuth();
-  const { tier, subscribed, subscriptionEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
+  const { tier, subscribed, subscriptionEnd, cancelAtPeriodEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -175,7 +175,7 @@ export function AccountSettings() {
                     <span className="font-semibold text-foreground capitalize">{tier} Plan</span>
                     {subscriptionEnd && (
                       <span className="text-sm text-muted-foreground ml-2">
-                        Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                        {cancelAtPeriodEnd ? "Cancels" : "Renews"} {new Date(subscriptionEnd).toLocaleDateString()}
                       </span>
                     )}
                   </div>

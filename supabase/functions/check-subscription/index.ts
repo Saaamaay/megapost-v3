@@ -104,6 +104,7 @@ serve(async (req) => {
     const hasActiveSub = subscriptions.data.length > 0;
     let productId: string | null = null;
     let subscriptionEnd: string | null = null;
+    let cancelAtPeriodEnd = false;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
@@ -113,7 +114,8 @@ serve(async (req) => {
         subscriptionEnd = new Date(periodEnd * 1000).toISOString();
       }
       productId = item0.price.product as string;
-      logStep("Active subscription found", { productId, subscriptionEnd });
+      cancelAtPeriodEnd = !!(subscription as any).cancel_at_period_end;
+      logStep("Active subscription found", { productId, subscriptionEnd, cancelAtPeriodEnd });
     } else {
       logStep("No active subscription");
     }
@@ -122,6 +124,7 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       product_id: productId,
       subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd,
       user_created_at: userCreatedAt,
       trial_ineligible: wasPreviouslyDeleted,
     }), {

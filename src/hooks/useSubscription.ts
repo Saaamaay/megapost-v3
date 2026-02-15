@@ -66,6 +66,7 @@ interface SubscriptionData {
   subscribed: boolean;
   product_id: string | null;
   subscription_end: string | null;
+  cancel_at_period_end: boolean;
   user_created_at: string | null;
   trial_ineligible: boolean;
 }
@@ -75,7 +76,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
   if (error) {
     const msg = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);
     if (msg.includes("Unauthorized") || msg.includes("Auth session missing") || msg.includes("401")) {
-      return { subscribed: false, product_id: null, subscription_end: null, user_created_at: null, trial_ineligible: false };
+      return { subscribed: false, product_id: null, subscription_end: null, cancel_at_period_end: false, user_created_at: null, trial_ineligible: false };
     }
     throw error;
   }
@@ -83,6 +84,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
     subscribed: data.subscribed ?? false,
     product_id: data.product_id ?? null,
     subscription_end: data.subscription_end ?? null,
+    cancel_at_period_end: data.cancel_at_period_end ?? false,
     user_created_at: data.user_created_at ?? null,
     trial_ineligible: data.trial_ineligible ?? false,
   };
@@ -103,6 +105,7 @@ export function useSubscription() {
   const subscribed = data?.subscribed ?? false;
   const productId = data?.product_id ?? null;
   const subscriptionEnd = data?.subscription_end ?? null;
+  const cancelAtPeriodEnd = data?.cancel_at_period_end ?? false;
   const userCreatedAt = data?.user_created_at ?? null;
   const trialIneligible = data?.trial_ineligible ?? false;
   const tier = resolveTier(subscribed, productId);
@@ -152,6 +155,7 @@ export function useSubscription() {
     subscribed,
     productId,
     subscriptionEnd,
+    cancelAtPeriodEnd,
     loading: !session ? false : isLoading,
     tier,
     isPaid,
