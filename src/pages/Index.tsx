@@ -320,17 +320,15 @@ const Index = () => {
           </div>
         </motion.div>
 
-        {/* How it works */}
-        <HowItWorks />
-
-        {/* Pricing */}
-        <PricingSection onGetStarted={handleGetStarted} />
-
-        {/* FAQ */}
-        <FAQ />
-
-        {/* Bottom CTA */}
-        <BottomCTA onGetStarted={handleGetStarted} hasProfile={!!(user && voiceProfile)} />
+        {/* Visitor-only sections */}
+        {!user && (
+          <>
+            <HowItWorks />
+            <PricingSection onGetStarted={handleGetStarted} />
+            <FAQ />
+            <BottomCTA onGetStarted={handleGetStarted} hasProfile={false} />
+          </>
+        )}
       </main>
       <Footer />
     </div>
