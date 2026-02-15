@@ -17,8 +17,8 @@ export interface PlanConfig {
 
 export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
   standard: {
-    price_id: "price_1T18qsCYzAdXKBHt1wgq6e6s",
-    product_id: "prod_Tz75rum2BC2w3m",
+    price_id: "price_1T1COm2ScUqZEwlTbomy6Rpr",
+    product_id: "prod_TzAkS4YF3ZUnGT",
     name: "Standard",
     price: "£10",
     interval: "month",
@@ -26,8 +26,8 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     maxPlatforms: 1,
   },
   premium: {
-    price_id: "price_1T07zqCYzAdXKBHty3g6o67K",
-    product_id: "prod_Ty48vtBStymfFT",
+    price_id: "price_1T1COl2ScUqZEwlTZQ7XI1Uh",
+    product_id: "prod_TzAkwUTiWivISB",
     name: "Premium",
     price: "£20",
     interval: "month",
@@ -35,8 +35,8 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     maxPlatforms: 5,
   },
   professional: {
-    price_id: "price_1T18rACYzAdXKBHta3HGFKEu",
-    product_id: "prod_Tz750SlWIfTKtU",
+    price_id: "price_1T1COk2ScUqZEwlTFtUTJB93",
+    product_id: "prod_TzAkNtJcIQ8H9q",
     name: "Professional",
     price: "£30",
     interval: "month",
