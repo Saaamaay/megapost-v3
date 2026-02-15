@@ -67,6 +67,7 @@ interface SubscriptionData {
   product_id: string | null;
   subscription_end: string | null;
   user_created_at: string | null;
+  trial_ineligible: boolean;
 }
 
 async function fetchSubscription(): Promise<SubscriptionData> {
@@ -74,7 +75,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
   if (error) {
     const msg = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);
     if (msg.includes("Unauthorized") || msg.includes("Auth session missing") || msg.includes("401")) {
-      return { subscribed: false, product_id: null, subscription_end: null, user_created_at: null };
+      return { subscribed: false, product_id: null, subscription_end: null, user_created_at: null, trial_ineligible: false };
     }
     throw error;
   }
@@ -83,6 +84,7 @@ async function fetchSubscription(): Promise<SubscriptionData> {
     product_id: data.product_id ?? null,
     subscription_end: data.subscription_end ?? null,
     user_created_at: data.user_created_at ?? null,
+    trial_ineligible: data.trial_ineligible ?? false,
   };
 }
 
@@ -102,16 +104,17 @@ export function useSubscription() {
   const productId = data?.product_id ?? null;
   const subscriptionEnd = data?.subscription_end ?? null;
   const userCreatedAt = data?.user_created_at ?? null;
+  const trialIneligible = data?.trial_ineligible ?? false;
   const tier = resolveTier(subscribed, productId);
 
   const isPaid = tier !== "free";
   const currentPlan = tier === "free" ? null : PLANS[tier];
 
-  // Trial logic: 7 days from signup
+  // Trial logic: 7 days from signup, but ineligible if previously deleted account
   const trialEndsAt = userCreatedAt
     ? new Date(new Date(userCreatedAt).getTime() + FREE_PLAN.trialDays * 24 * 60 * 60 * 1000)
     : null;
-  const trialExpired = !isPaid && trialEndsAt ? new Date() > trialEndsAt : false;
+  const trialExpired = !isPaid && (trialIneligible || (trialEndsAt ? new Date() > trialEndsAt : false));
   const inTrial = !isPaid && !trialExpired;
 
   // Trial users get Premium-level access

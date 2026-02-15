@@ -78,6 +78,16 @@ serve(async (req) => {
     }
     logStep("Auth user deleted");
 
+    // 4. Record hashed email to prevent trial abuse
+    const encoder = new TextEncoder();
+    const data = encoder.encode(user.email!.toLowerCase().trim());
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const emailHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+    await supabaseClient.from("deleted_accounts").insert({ email_hash: emailHash });
+    logStep("Recorded deleted account hash");
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
