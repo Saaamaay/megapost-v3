@@ -56,7 +56,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
   const { canGenerate: hasPostsLeft, postsRemaining, freeLimit, isPro, loading: limitLoading, refreshCount } = usePostLimit();
-  const { startCheckout } = useSubscription();
+  const { startCheckout, maxPlatforms, tier } = useSubscription();
 
   // Cycle placeholder text through pillars
   useEffect(() => {
@@ -306,7 +306,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Free post available
+                    Free trial — {postsRemaining} post{postsRemaining !== 1 ? "s" : ""} left today
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {postsRemaining} of {freeLimit} remaining
@@ -314,7 +314,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 </div>
                 <Progress value={((freeLimit - postsRemaining) / freeLimit) * 100} className="h-2" />
                 <p className="text-xs text-muted-foreground">
-                  Try your first post free — upgrade to Pro for unlimited generation.
+                  Upgrade for unlimited generation across all platforms.
                 </p>
               </>
             ) : (
@@ -324,10 +324,10 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-lg text-foreground">
-                    You've used your free post
+                    Daily limit reached
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Upgrade to Pro for unlimited post generation across all platforms.
+                    Upgrade for unlimited post generation across all platforms.
                   </p>
                 </div>
                 <Button
@@ -335,7 +335,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                   className="gap-2"
                 >
                   <Crown className="w-4 h-4" />
-                  Upgrade to Pro — £20/mo
+                  Upgrade — from £10/mo
                 </Button>
               </div>
             )}
@@ -399,7 +399,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
               <label className="block text-sm font-medium text-foreground mb-3">
                 Where should we post?
               </label>
-              <PlatformSelector selected={platforms} onToggle={togglePlatform} />
+              <PlatformSelector selected={platforms} onToggle={togglePlatform} maxPlatforms={maxPlatforms} />
             </div>
             
             {platforms.length > 0 && (

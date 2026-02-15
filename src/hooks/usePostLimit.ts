@@ -3,31 +3,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const FREE_POST_LIMIT = 1;
+const FREE_DAILY_LIMIT = 3;
 
 export function usePostLimit() {
   const { user } = useAuth();
-  const { isPro, loading: subLoading } = useSubscription();
-  const [postCount, setPostCount] = useState<number>(0);
+  const { isPaid, loading: subLoading } = useSubscription();
+  const [todayCount, setTodayCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchPostCount = useCallback(async () => {
+  const fetchTodayCount = useCallback(async () => {
     if (!user) {
-      setPostCount(0);
+      setTodayCount(0);
       setLoading(false);
       return;
     }
 
     try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
       const { count, error } = await supabase
         .from("generated_posts")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .gte("created_at", startOfDay.toISOString());
 
       if (error) {
         console.error("Failed to fetch post count:", error);
       } else {
-        setPostCount(count ?? 0);
+        setTodayCount(count ?? 0);
       }
     } catch (err) {
       console.error("Error fetching post count:", err);
@@ -37,19 +41,19 @@ export function usePostLimit() {
   }, [user]);
 
   useEffect(() => {
-    fetchPostCount();
-  }, [fetchPostCount]);
+    fetchTodayCount();
+  }, [fetchTodayCount]);
 
-  const canGenerate = isPro || postCount < FREE_POST_LIMIT;
-  const postsRemaining = Math.max(0, FREE_POST_LIMIT - postCount);
+  const canGenerate = isPaid || todayCount < FREE_DAILY_LIMIT;
+  const postsRemaining = isPaid ? Infinity : Math.max(0, FREE_DAILY_LIMIT - todayCount);
 
   return {
-    postCount,
+    postCount: todayCount,
     canGenerate,
     postsRemaining,
-    freeLimit: FREE_POST_LIMIT,
-    isPro,
+    freeLimit: FREE_DAILY_LIMIT,
+    isPro: isPaid,
     loading: loading || subLoading,
-    refreshCount: fetchPostCount,
+    refreshCount: fetchTodayCount,
   };
 }
