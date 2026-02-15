@@ -32,27 +32,37 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData?.user) {
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      logStep("Claims validation failed", { error: claimsError?.message });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
 
-    const email = userData.user.email as string;
+    const email = claimsData.claims.email as string;
     if (!email) {
       return new Response(JSON.stringify({ error: "Email not available" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
-    const userCreatedAt = userData.user.created_at;
+
+    // Fetch full user for created_at (needed for trial logic)
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const userId = claimsData.claims.sub as string;
+    const { data: userData } = await serviceClient.auth.admin.getUserById(userId);
+    const userCreatedAt = userData?.user?.created_at ?? null;
     logStep("User authenticated", { email, createdAt: userCreatedAt });
 
     // Check if this email was previously deleted (trial abuse prevention)
@@ -62,7 +72,7 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const emailHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
-    const { data: deletedRecord } = await supabaseClient
+    const { data: deletedRecord } = await serviceClient
       .from("deleted_accounts")
       .select("id")
       .eq("email_hash", emailHash)
