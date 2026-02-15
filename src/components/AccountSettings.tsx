@@ -235,16 +235,7 @@ export function AccountSettings() {
                         <Button variant="outline" size="sm" className="w-full" disabled>
                           Current Plan
                         </Button>
-                      ) : isPaid ? (
-                        <Button
-                          variant={isHighlighted ? "default" : "outline"}
-                          size="sm"
-                          className="w-full"
-                          onClick={() => openPortal().catch(() => toast.error("Failed to open billing portal"))}
-                        >
-                          Manage Subscription
-                        </Button>
-                      ) : (
+                      ) : !isPaid ? (
                         <Button
                           variant={isHighlighted ? "default" : "outline"}
                           size="sm"
@@ -253,7 +244,7 @@ export function AccountSettings() {
                         >
                           Upgrade
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })}
