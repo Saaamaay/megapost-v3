@@ -288,11 +288,15 @@ const Index = () => {
           ))}
         </motion.div>
 
+        {/* How it works — shown to everyone */}
+        <HowItWorks />
+
         {/* Platform showcase */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.8 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
           className="mt-24 text-center"
         >
           <p className="text-sm font-medium text-muted-foreground mb-6">
@@ -310,9 +314,6 @@ const Index = () => {
             <span className="text-foreground font-semibold">TikTok</span>
           </div>
         </motion.div>
-
-        {/* How it works — shown to everyone */}
-        <HowItWorks />
 
         {/* Visitor-only sections */}
         {!user && (
