@@ -4,11 +4,11 @@
 
 ## Overview
 
-Your presentation defines three paid tiers replacing the current single "Pro Plan" (£20/mo). Here's the mapping:
+Three paid tiers replacing the current single "Pro Plan" (£20/mo):
 
 | Plan | Price | Profiles | Platforms | Generations |
 |------|-------|----------|-----------|-------------|
-| **Free** (trial) | £0 | 1 | 1 | 1 post total |
+| **Free** (7-day trial) | £0 | 1 | 1 | 3 posts/day |
 | **Standard** | £10/mo | 1 | 1 | Unlimited |
 | **Premium** | £20/mo | 1 | All (5) | Unlimited |
 | **Professional** | £30/mo | Up to 3 | All (5) | Unlimited |
@@ -23,20 +23,18 @@ Refactor `useSubscription.ts` to replace the single `PLANS.pro` with a `PLANS` o
 
 ### 3. Enforce Platform Limits
 Update `PlatformSelector` and `ContentGenerator` to receive the user's tier and enforce:
-- **Free / Standard**: Only 1 platform selectable at a time (show lock icons on others)
+- **Free / Standard**: Only 1 platform selectable (Standard user picks which platform on sign-up, hardcoded)
 - **Premium / Professional**: All platforms available
-
-The Standard user can pick *which* platform they want (not hardcoded), but only one at a time.
 
 ### 4. Enforce Profile Limits
 Update `BusinessSwitcher` and the "Add new business" flow to check the profile cap:
-- **Free / Standard / Premium**: Max 1 profile (hide "Add new business" button)
+- **Free / Standard / Premium**: Max 1 profile (gray out "Add new business" button)
 - **Professional**: Up to 3 profiles
 
 Show an upgrade prompt when a user tries to exceed their limit.
 
 ### 5. Update the Post Limit Logic
-Modify `usePostLimit.ts` so that any paid tier (standard, premium, professional) gets unlimited posts, while free stays at 1.
+Modify `usePostLimit.ts` so that any paid tier (standard, premium, professional) gets unlimited posts, while free stays at maximum 3 posts per day.
 
 ### 6. Redesign Account Settings Billing Section
 Replace the current binary "Free vs Pro" display with a proper pricing table showing all three tiers side-by-side, highlighting the user's current plan with a badge, and offering upgrade/downgrade buttons that call `startCheckout` with the correct price ID.
@@ -100,4 +98,3 @@ The `useSubscription` hook will derive the tier by matching the returned `produc
 
 ### Stripe setup
 Two new products/prices will be created via the Stripe tools before implementation begins.
-
