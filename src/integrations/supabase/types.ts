@@ -113,6 +113,7 @@ export type Database = {
           example_post: string | null
           id: string
           is_active: boolean
+          locked_platform: string | null
           profile_name: string | null
           tone_casual_professional: number | null
           tone_funny_sincere: number | null
@@ -132,6 +133,7 @@ export type Database = {
           example_post?: string | null
           id?: string
           is_active?: boolean
+          locked_platform?: string | null
           profile_name?: string | null
           tone_casual_professional?: number | null
           tone_funny_sincere?: number | null
@@ -151,6 +153,7 @@ export type Database = {
           example_post?: string | null
           id?: string
           is_active?: boolean
+          locked_platform?: string | null
           profile_name?: string | null
           tone_casual_professional?: number | null
           tone_funny_sincere?: number | null

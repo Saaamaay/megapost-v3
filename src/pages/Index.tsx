@@ -29,6 +29,7 @@ interface VoiceProfile {
   toneScales: ToneScales;
   samplePost: string;
   brandBeliefs: string[];
+  lockedPlatform?: string | null;
 }
 
 type ViewState = "hero" | "setup" | "generator" | "edit" | "pillars" | "newBusiness" | "account";

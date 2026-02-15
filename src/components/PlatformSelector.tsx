@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Linkedin, Instagram, Facebook, Twitter, Check, Lock } from "lucide-react";
+import { Linkedin, Instagram, Facebook, Twitter, Check, Lock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -62,55 +62,77 @@ interface PlatformSelectorProps {
   selected: Platform[];
   onToggle: (platform: Platform) => void;
   maxPlatforms?: number;
+  lockedPlatform?: string | null;
+  isStandardTier?: boolean;
 }
 
-export function PlatformSelector({ selected, onToggle, maxPlatforms = 5 }: PlatformSelectorProps) {
+export function PlatformSelector({ selected, onToggle, maxPlatforms = 5, lockedPlatform, isStandardTier }: PlatformSelectorProps) {
+  const hasLockedPlatform = !!lockedPlatform;
+
   return (
     <TooltipProvider>
-      <div className="flex flex-wrap gap-3">
-        {platforms.map((platform) => {
-          const isSelected = selected.includes(platform.id);
-          const isLocked = !isSelected && maxPlatforms <= selected.length && maxPlatforms < 5;
+      <div className="space-y-3">
+        {/* Warning for Standard users who haven't locked yet */}
+        {isStandardTier && !hasLockedPlatform && (
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm">
+            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Standard plan:</span> The platform you select for your first post will be permanently locked to your account. To change it later, you'll need to contact support or upgrade.
+            </p>
+          </div>
+        )}
 
-          return (
-            <Tooltip key={platform.id}>
-              <TooltipTrigger asChild>
-                <motion.button
-                  onClick={() => !isLocked && onToggle(platform.id)}
-                  whileHover={isLocked ? {} : { scale: 1.02 }}
-                  whileTap={isLocked ? {} : { scale: 0.98 }}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium",
-                    isLocked
-                      ? "border-border bg-muted/30 text-muted-foreground/50 cursor-not-allowed"
-                      : isSelected
-                        ? cn(platform.bgClass, platform.colorClass)
-                        : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
-                  )}
-                >
-                  <span className={cn(isSelected && platform.colorClass, isLocked && "opacity-40")}>
-                    {isLocked ? <Lock className="w-5 h-5" /> : platform.icon}
-                  </span>
-                  <span>{platform.name}</span>
-                  {isSelected && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className={cn("ml-1", platform.colorClass)}
-                    >
-                      <Check className="w-4 h-4" />
-                    </motion.span>
-                  )}
-                </motion.button>
-              </TooltipTrigger>
-              {isLocked && (
-                <TooltipContent>
-                  <p>Upgrade to Premium for all platforms</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          );
-        })}
+        <div className="flex flex-wrap gap-3">
+          {platforms.map((platform) => {
+            const isSelected = selected.includes(platform.id);
+            const isLockedToThis = lockedPlatform === platform.id;
+            const isLockedOut = hasLockedPlatform && lockedPlatform !== platform.id && isStandardTier;
+            const isLocked = !isSelected && !isLockedToThis && maxPlatforms <= selected.length && maxPlatforms < 5;
+            const disabled = isLockedOut || isLocked;
+
+            return (
+              <Tooltip key={platform.id}>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => !disabled && onToggle(platform.id)}
+                    whileHover={disabled ? {} : { scale: 1.02 }}
+                    whileTap={disabled ? {} : { scale: 0.98 }}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 font-medium",
+                      disabled
+                        ? "border-border bg-muted/30 text-muted-foreground/50 cursor-not-allowed"
+                        : isSelected
+                          ? cn(platform.bgClass, platform.colorClass)
+                          : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <span className={cn(isSelected && platform.colorClass, disabled && "opacity-40")}>
+                      {disabled ? <Lock className="w-5 h-5" /> : platform.icon}
+                    </span>
+                    <span>{platform.name}</span>
+                    {isSelected && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className={cn("ml-1", platform.colorClass)}
+                      >
+                        <Check className="w-4 h-4" />
+                      </motion.span>
+                    )}
+                    {isLockedToThis && isSelected && (
+                      <Lock className="w-3 h-3 ml-1 opacity-50" />
+                    )}
+                  </motion.button>
+                </TooltipTrigger>
+                {disabled && (
+                  <TooltipContent>
+                    <p>{isLockedOut ? "Your Standard plan is locked to " + lockedPlatform + ". Upgrade or contact support to change." : "Upgrade to Premium for all platforms"}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
+        </div>
       </div>
     </TooltipProvider>
   );

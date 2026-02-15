@@ -20,6 +20,7 @@ interface VoiceProfile {
   samplePost: string;
   brandBeliefs: string[];
   isActive: boolean;
+  lockedPlatform?: string | null;
 }
 
 interface AuthContextType {
@@ -56,6 +57,7 @@ function mapDbToProfile(data: any): VoiceProfile {
     samplePost: data.example_post || "",
     brandBeliefs: data.brand_beliefs || [],
     isActive: data.is_active ?? false,
+    lockedPlatform: data.locked_platform ?? null,
   };
 }
 

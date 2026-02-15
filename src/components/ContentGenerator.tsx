@@ -32,6 +32,7 @@ interface VoiceProfile {
   toneScales: ToneScales;
   samplePost: string;
   brandBeliefs: string[];
+  lockedPlatform?: string | null;
 }
 
 interface ContentGeneratorProps {
@@ -57,6 +58,15 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const { getPlaceholder } = useContentPillars();
   const { canGenerate: hasPostsLeft, postsRemaining, freeLimit, isPro, loading: limitLoading, refreshCount } = usePostLimit();
   const { startCheckout, maxPlatforms, tier, trialExpired, trialDaysLeft } = useSubscription();
+  const { refetchVoiceProfile } = useAuth();
+  const isStandardTier = tier === "standard";
+
+  // Auto-select locked platform for Standard users
+  useEffect(() => {
+    if (isStandardTier && voiceProfile.lockedPlatform && platforms.length === 0) {
+      setPlatforms([voiceProfile.lockedPlatform as Platform]);
+    }
+  }, [isStandardTier, voiceProfile.lockedPlatform]);
 
   // Cycle placeholder text through pillars
   useEffect(() => {
@@ -214,7 +224,20 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           setFormats(data.formats as Record<Platform, string>);
         }
         
-        toast.success("Posts generated successfully!");
+        // Lock platform for Standard tier on first generation
+        if (isStandardTier && !voiceProfile.lockedPlatform && platforms.length === 1 && voiceProfile.id) {
+          const { error: lockError } = await supabase
+            .from("voice_profiles")
+            .update({ locked_platform: platforms[0] })
+            .eq("id", voiceProfile.id);
+          if (!lockError) {
+            await refetchVoiceProfile();
+            toast.success(`Your platform has been set to ${platforms[0].charAt(0).toUpperCase() + platforms[0].slice(1)}. This is now locked to your Standard plan.`);
+          }
+        } else {
+          toast.success("Posts generated successfully!");
+        }
+        
         await savePosts(generatedPosts, description);
         refreshCount();
       }
@@ -422,7 +445,13 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
               <label className="block text-sm font-medium text-foreground mb-3">
                 Where should we post?
               </label>
-              <PlatformSelector selected={platforms} onToggle={togglePlatform} maxPlatforms={maxPlatforms} />
+              <PlatformSelector
+                selected={platforms}
+                onToggle={togglePlatform}
+                maxPlatforms={maxPlatforms}
+                lockedPlatform={voiceProfile.lockedPlatform}
+                isStandardTier={isStandardTier}
+              />
             </div>
             
             {platforms.length > 0 && (
