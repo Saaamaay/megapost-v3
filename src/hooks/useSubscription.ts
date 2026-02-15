@@ -106,14 +106,18 @@ export function useSubscription() {
 
   const isPaid = tier !== "free";
   const currentPlan = tier === "free" ? null : PLANS[tier];
-  const maxProfiles = currentPlan?.maxProfiles ?? FREE_PLAN.maxProfiles;
-  const maxPlatforms = currentPlan?.maxPlatforms ?? FREE_PLAN.maxPlatforms;
 
   // Trial logic: 7 days from signup
   const trialEndsAt = userCreatedAt
     ? new Date(new Date(userCreatedAt).getTime() + FREE_PLAN.trialDays * 24 * 60 * 60 * 1000)
     : null;
   const trialExpired = !isPaid && trialEndsAt ? new Date() > trialEndsAt : false;
+  const inTrial = !isPaid && !trialExpired;
+
+  // Trial users get Premium-level access
+  const maxProfiles = currentPlan?.maxProfiles ?? (inTrial ? PLANS.premium.maxProfiles : FREE_PLAN.maxProfiles);
+  const maxPlatforms = currentPlan?.maxPlatforms ?? (inTrial ? PLANS.premium.maxPlatforms : FREE_PLAN.maxPlatforms);
+
   const trialDaysLeft = !isPaid && trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
     : null;
