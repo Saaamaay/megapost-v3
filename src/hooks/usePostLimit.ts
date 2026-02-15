@@ -7,7 +7,7 @@ const FREE_DAILY_LIMIT = 3;
 
 export function usePostLimit() {
   const { user } = useAuth();
-  const { isPaid, loading: subLoading } = useSubscription();
+  const { isPaid, loading: subLoading, trialExpired } = useSubscription();
   const [todayCount, setTodayCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +44,8 @@ export function usePostLimit() {
     fetchTodayCount();
   }, [fetchTodayCount]);
 
-  const canGenerate = isPaid || todayCount < FREE_DAILY_LIMIT;
-  const postsRemaining = isPaid ? Infinity : Math.max(0, FREE_DAILY_LIMIT - todayCount);
+  const canGenerate = isPaid || (!trialExpired && todayCount < FREE_DAILY_LIMIT);
+  const postsRemaining = isPaid ? Infinity : trialExpired ? 0 : Math.max(0, FREE_DAILY_LIMIT - todayCount);
 
   return {
     postCount: todayCount,

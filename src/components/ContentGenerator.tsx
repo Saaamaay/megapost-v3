@@ -56,7 +56,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
   const { canGenerate: hasPostsLeft, postsRemaining, freeLimit, isPro, loading: limitLoading, refreshCount } = usePostLimit();
-  const { startCheckout, maxPlatforms, tier } = useSubscription();
+  const { startCheckout, maxPlatforms, tier, trialExpired, trialDaysLeft } = useSubscription();
 
   // Cycle placeholder text through pillars
   useEffect(() => {
@@ -301,12 +301,33 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 : "bg-destructive/5 border-destructive/20"
             }`}
           >
-            {hasPostsLeft ? (
+            {trialExpired ? (
+              <div className="text-center space-y-3 py-2">
+                <div className="inline-flex p-3 rounded-full bg-destructive/10 mx-auto">
+                  <Lock className="w-6 h-6 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg text-foreground">
+                    Free trial ended
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your 7-day free trial has expired. Upgrade to keep creating.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => startCheckout().catch(() => toast.error("Failed to start checkout"))}
+                  className="gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  Upgrade — from £10/mo
+                </Button>
+              </div>
+            ) : hasPostsLeft ? (
               <>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Free trial — {postsRemaining} post{postsRemaining !== 1 ? "s" : ""} left today
+                    Free trial{trialDaysLeft !== null ? ` — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left` : ""} — {postsRemaining} post{postsRemaining !== 1 ? "s" : ""} left today
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {postsRemaining} of {freeLimit} remaining
@@ -327,7 +348,9 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                     Daily limit reached
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Upgrade for unlimited post generation across all platforms.
+                    {trialDaysLeft !== null && trialDaysLeft > 0
+                      ? `Come back tomorrow — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left in your trial.`
+                      : "Upgrade for unlimited post generation across all platforms."}
                   </p>
                 </div>
                 <Button

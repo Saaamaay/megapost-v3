@@ -52,7 +52,8 @@ serve(async (req) => {
         status: 401,
       });
     }
-    logStep("User authenticated", { email });
+    const userCreatedAt = userData.user.created_at;
+    logStep("User authenticated", { email, createdAt: userCreatedAt });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email, limit: 1 });
@@ -93,6 +94,7 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       product_id: productId,
       subscription_end: subscriptionEnd,
+      user_created_at: userCreatedAt,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
