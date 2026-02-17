@@ -88,6 +88,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const sendWelcomeEmail = async (email: string) => {
+    try {
+      const welcomed = localStorage.getItem(`megapost_welcomed_${email}`);
+      if (welcomed) return;
+
+      await supabase.functions.invoke("send-welcome-email", {
+        body: {
+          type: "UPDATE",
+          record: { email, email_confirmed_at: new Date().toISOString() },
+          old_record: { email, email_confirmed_at: null },
+        },
+      });
+      localStorage.setItem(`megapost_welcomed_${email}`, "true");
+    } catch (err) {
+      console.error("Welcome email error:", err);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -101,6 +119,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             fetchVoiceProfiles(session.user.id);
           }, 0);
+
+          // Send welcome email on first sign in
+          if (event === "SIGNED_IN" && session.user.email) {
+            sendWelcomeEmail(session.user.email);
+          }
         } else {
           setVoiceProfile(null);
           setAllProfiles([]);
