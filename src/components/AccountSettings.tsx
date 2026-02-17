@@ -186,34 +186,6 @@ export function AccountSettings() {
                 </div>
               )}
 
-              {/* Billing toggle */}
-              {!isPaid && (
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => setBilling("monthly")}
-                    className={cn(
-                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
-                      billing === "monthly"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setBilling("yearly")}
-                    className={cn(
-                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
-                      billing === "yearly"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Annual (2 months free)
-                  </button>
-                </div>
-              )}
-
               {/* Pricing cards */}
               <div className="grid gap-4 md:grid-cols-3">
                 {(Object.entries(PLANS) as [Exclude<SubscriptionTier, "free">, typeof PLANS[keyof typeof PLANS]][]).map(([planKey, plan]) => {
@@ -283,6 +255,34 @@ export function AccountSettings() {
                   );
                 })}
               </div>
+
+              {/* Billing toggle */}
+              {!isPaid && (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => setBilling("monthly")}
+                    className={cn(
+                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                      billing === "monthly"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBilling("yearly")}
+                    className={cn(
+                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                      billing === "yearly"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Annual (2 months free)
+                  </button>
+                </div>
+              )}
             </>
           )}
         </section>
