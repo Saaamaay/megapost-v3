@@ -91,15 +91,14 @@ export function PricingSection({ onGetStarted }: PricingSectionProps) {
                 : "bg-muted text-muted-foreground hover:text-foreground"
             )}
           >
-            Yearly
+            Annual (2 months free)
           </button>
         </div>
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {plans.map((plan, index) => {
-          const displayPrice = billing === "yearly" ? plan.priceYearly : plan.price;
-          const interval = billing === "yearly" ? "/yr" : "/mo";
+          const interval = billing === "yearly" ? "/mo" : "/mo";
 
           return (
             <motion.div
@@ -126,9 +125,14 @@ export function PricingSection({ onGetStarted }: PricingSectionProps) {
               </h3>
               <div className="mt-3 mb-1">
                 <span className="font-display text-4xl font-extrabold text-foreground">
-                  {displayPrice}
+                  {plan.price}
                 </span>
-                <span className="text-muted-foreground">{interval}</span>
+                <span className="text-muted-foreground">/mo</span>
+                {billing === "yearly" && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {plan.priceYearly} billed annually
+                  </p>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mb-6">
                 {plan.description}

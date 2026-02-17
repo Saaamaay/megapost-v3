@@ -71,7 +71,7 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
                 : "bg-muted text-muted-foreground hover:text-foreground"
             )}
           >
-            Yearly
+            Annual (2 months free)
           </button>
         </div>
 
@@ -79,8 +79,6 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
           {(Object.entries(PLANS) as [Exclude<SubscriptionTier, "free">, typeof PLANS[keyof typeof PLANS]][]).map(([planKey, plan]) => {
             const tierInfo = TIER_FEATURES[planKey];
             const isHighlighted = tierInfo?.highlight;
-            const displayPrice = billing === "yearly" ? plan.priceYearly : plan.price;
-            const interval = billing === "yearly" ? "/yr" : "/mo";
 
             return (
               <div
@@ -99,8 +97,13 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
                 <div>
                   <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
                   <p className="font-display font-bold text-2xl text-foreground mt-1">
-                    {displayPrice}<span className="text-sm font-normal text-muted-foreground">{interval}</span>
+                    {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
                   </p>
+                  {billing === "yearly" && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {plan.priceYearly} billed annually
+                    </p>
+                  )}
                 </div>
 
                 <ul className="space-y-2 text-sm">
