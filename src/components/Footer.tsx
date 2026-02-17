@@ -12,6 +12,9 @@ export function Footer() {
           <Link to="/terms" className="hover:text-foreground transition-colors">
             Terms of Service
           </Link>
+          <a href="mailto:support@megapost.ai" className="hover:text-foreground transition-colors">
+            Support
+          </a>
         </div>
       </div>
     </footer>
