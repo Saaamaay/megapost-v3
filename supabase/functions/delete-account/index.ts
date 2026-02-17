@@ -70,7 +70,27 @@ serve(async (req) => {
     await supabaseClient.from("voice_profiles").delete().eq("user_id", userId);
     logStep("Deleted voice_profiles");
 
-    // 3. Delete the auth user (requires service role)
+    // 3. Send deletion confirmation email BEFORE deleting auth user
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      await fetch(`${supabaseUrl}/functions/v1/send-subscription-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          template: "account-deleted",
+          data: {},
+        }),
+      });
+      logStep("Deletion confirmation email sent");
+    } catch (emailErr) {
+      logStep("Failed to send deletion email (non-blocking)", { error: String(emailErr) });
+    }
+
+    // 4. Delete the auth user (requires service role)
     const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(userId);
     if (deleteError) {
       logStep("Failed to delete auth user", { error: deleteError.message });
@@ -78,7 +98,7 @@ serve(async (req) => {
     }
     logStep("Auth user deleted");
 
-    // 4. Record hashed email to prevent trial abuse
+    // 5. Record hashed email to prevent trial abuse
     const encoder = new TextEncoder();
     const data = encoder.encode(user.email!.toLowerCase().trim());
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
