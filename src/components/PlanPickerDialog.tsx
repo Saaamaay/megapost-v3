@@ -27,9 +27,11 @@ interface PlanPickerDialogProps {
 
 export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPickerDialogProps) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
-  const handleSelect = async (planKey: string, priceId: string) => {
+  const handleSelect = async (planKey: string, plan: typeof PLANS[keyof typeof PLANS]) => {
     setLoading(planKey);
+    const priceId = billing === "yearly" ? plan.price_id_yearly : plan.price_id;
     try {
       await onSelectPlan(priceId);
     } catch {
@@ -47,10 +49,38 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
           <p className="text-sm text-muted-foreground text-center">Pick the plan that fits your needs. Cancel anytime.</p>
         </DialogHeader>
 
+        {/* Billing toggle */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <button
+            onClick={() => setBilling("monthly")}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+              billing === "monthly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBilling("yearly")}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+              billing === "yearly"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Yearly
+          </button>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3 mt-4">
           {(Object.entries(PLANS) as [Exclude<SubscriptionTier, "free">, typeof PLANS[keyof typeof PLANS]][]).map(([planKey, plan]) => {
             const tierInfo = TIER_FEATURES[planKey];
             const isHighlighted = tierInfo?.highlight;
+            const displayPrice = billing === "yearly" ? plan.priceYearly : plan.price;
+            const interval = billing === "yearly" ? "/yr" : "/mo";
 
             return (
               <div
@@ -69,7 +99,7 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
                 <div>
                   <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
                   <p className="font-display font-bold text-2xl text-foreground mt-1">
-                    {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    {displayPrice}<span className="text-sm font-normal text-muted-foreground">{interval}</span>
                   </p>
                 </div>
 
@@ -87,7 +117,7 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
                   size="sm"
                   className="w-full gap-2"
                   disabled={loading !== null}
-                  onClick={() => handleSelect(planKey, plan.price_id)}
+                  onClick={() => handleSelect(planKey, plan)}
                 >
                   {loading === planKey ? "Loading…" : (
                     <>
