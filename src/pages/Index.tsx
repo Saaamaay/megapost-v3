@@ -49,35 +49,16 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Handle return from Stripe checkout
-  const [pendingCheckoutEmail, setPendingCheckoutEmail] = useState(false);
-
   useEffect(() => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success") {
       checkSubscription();
       toast.success("Welcome! Your subscription is now active.");
       setSearchParams({}, { replace: true });
-      setPendingCheckoutEmail(true);
     } else if (checkout === "cancelled") {
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, checkSubscription, setSearchParams]);
-
-  // Send subscription confirmed email once tier is resolved after checkout
-  useEffect(() => {
-    if (pendingCheckoutEmail && isPaid && user?.email) {
-      const planMap: Record<string, { name: string; price: string; platforms: string; profiles: string }> = {
-        standard: { name: "Standard", price: "£10", platforms: "1 platform", profiles: "1 business profile" },
-        premium: { name: "Premium", price: "£20", platforms: "All 5 platforms", profiles: "1 business profile" },
-        professional: { name: "Professional", price: "£30", platforms: "All 5 platforms", profiles: "Up to 3 business profiles" },
-      };
-      const plan = planMap[tier] || planMap.premium;
-      supabase.functions.invoke("send-subscription-email", {
-        body: { email: user.email, template: "subscription-confirmed", data: plan },
-      }).catch(() => {});
-      setPendingCheckoutEmail(false);
-    }
-  }, [pendingCheckoutEmail, isPaid, tier, user?.email]);
 
   // Use saved profile if available
   const activeProfile = voiceProfile || localVoiceProfile;
