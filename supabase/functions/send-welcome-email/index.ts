@@ -50,13 +50,14 @@ Deno.serve(async (req) => {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background-color:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#FFFDF7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFFDF7;padding:40px 20px;">
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
           <tr>
-            <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:40px 40px 32px;text-align:center;">
+            <td style="background:linear-gradient(135deg,#E89A0C,#D97706);padding:40px 40px 32px;text-align:center;">
+              <p style="margin:0 0 8px;color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;letter-spacing:1px;">megapost<span style="color:#ffffff;">.ai</span></p>
               <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">Welcome to MegaPost! 🎉</h1>
             </td>
           </tr>
@@ -73,19 +74,19 @@ Deno.serve(async (req) => {
               </p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                 <tr>
-                  <td style="padding:12px 16px;background:#f3f4f6;border-radius:12px;">
+                  <td style="padding:12px 16px;background:#FEF7E8;border-radius:12px;border-left:3px solid #E89A0C;">
                     <p style="margin:0;color:#1a1a2e;font-size:15px;"><strong>1.</strong> Set up your voice profile — tell us about your business and tone</p>
                   </td>
                 </tr>
                 <tr><td style="height:8px;"></td></tr>
                 <tr>
-                  <td style="padding:12px 16px;background:#f3f4f6;border-radius:12px;">
+                  <td style="padding:12px 16px;background:#FEF7E8;border-radius:12px;border-left:3px solid #E89A0C;">
                     <p style="margin:0;color:#1a1a2e;font-size:15px;"><strong>2.</strong> Choose your platforms — LinkedIn, X, Instagram & more</p>
                   </td>
                 </tr>
                 <tr><td style="height:8px;"></td></tr>
                 <tr>
-                  <td style="padding:12px 16px;background:#f3f4f6;border-radius:12px;">
+                  <td style="padding:12px 16px;background:#FEF7E8;border-radius:12px;border-left:3px solid #E89A0C;">
                     <p style="margin:0;color:#1a1a2e;font-size:15px;"><strong>3.</strong> Generate posts that sound like you in seconds</p>
                   </td>
                 </tr>
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 24px;">
-                    <a href="https://megapost.ai" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:600;">
+                    <a href="https://megapost.ai" style="display:inline-block;background:linear-gradient(135deg,#E89A0C,#D97706);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:600;">
                       Get Started →
                     </a>
                   </td>
@@ -107,7 +108,7 @@ Deno.serve(async (req) => {
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #f3f4f6;text-align:center;">
               <p style="margin:0;color:#9ca3af;font-size:13px;">
-                © ${new Date().getFullYear()} MegaPost · <a href="https://megapost.ai/privacy" style="color:#6366f1;text-decoration:none;">Privacy</a>
+                © ${new Date().getFullYear()} MegaPost · <a href="https://megapost.ai/privacy" style="color:#E89A0C;text-decoration:none;">Privacy</a>
               </p>
             </td>
           </tr>
