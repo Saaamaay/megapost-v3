@@ -109,7 +109,7 @@ const Index = () => {
     } else if (user) {
       setViewState("setup");
     } else {
-      navigate("/auth");
+      navigate("/auth?mode=signup");
     }
   };
 
