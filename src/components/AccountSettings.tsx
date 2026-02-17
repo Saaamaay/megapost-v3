@@ -42,6 +42,7 @@ export function AccountSettings() {
   const [newPassword, setNewPassword] = useState("");
   
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
@@ -146,14 +147,42 @@ export function AccountSettings() {
 
         {/* Subscription & Billing */}
         <section className="bg-card rounded-2xl border border-border p-6 space-y-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <CreditCard className="w-5 h-5 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <CreditCard className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-display font-bold text-lg text-foreground">Subscription & Billing</h2>
+                <p className="text-muted-foreground text-sm">Manage your plan and payment</p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-display font-bold text-lg text-foreground">Subscription & Billing</h2>
-              <p className="text-muted-foreground text-sm">Manage your plan and payment</p>
-            </div>
+            {!isPaid && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setBilling("monthly")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                    billing === "monthly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBilling("yearly")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-colors",
+                    billing === "yearly"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Annual
+                </button>
+              </div>
+            )}
           </div>
 
           {subLoading ? (
@@ -219,8 +248,13 @@ export function AccountSettings() {
                       <div>
                         <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
                         <p className="font-display font-bold text-2xl text-foreground mt-1">
-                          {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                          {billing === "yearly" ? plan.priceMonthlyAnnual : plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
                         </p>
+                        {billing === "yearly" && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {plan.priceYearly} billed annually
+                          </p>
+                        )}
                       </div>
 
                       <ul className="space-y-2 text-sm">
@@ -241,7 +275,7 @@ export function AccountSettings() {
                           variant={isHighlighted ? "default" : "outline"}
                           size="sm"
                           className="w-full"
-                          onClick={() => startCheckout(plan.price_id).catch(() => toast.error("Failed to start checkout"))}
+                          onClick={() => startCheckout(billing === "yearly" ? plan.price_id_yearly : plan.price_id).catch(() => toast.error("Failed to start checkout"))}
                         >
                           Upgrade
                         </Button>
