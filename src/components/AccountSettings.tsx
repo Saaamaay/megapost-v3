@@ -240,7 +240,7 @@ export function AccountSettings() {
                         </span>
                       )}
                       {isHighlighted && !isCurrent && (
-                        <span className="absolute -top-3 left-4 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                           Most Popular
                         </span>
                       )}
