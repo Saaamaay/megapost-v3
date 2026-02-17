@@ -38,8 +38,9 @@ const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }>
 
 export function AccountSettings() {
   const { user, signOut } = useAuth();
-  const { tier, subscribed, subscriptionEnd, cancelAtPeriodEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
+  const { tier, isPaid, subscribed, subscriptionEnd, cancelAtPeriodEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
   const [newPassword, setNewPassword] = useState("");
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -92,7 +93,7 @@ export function AccountSettings() {
     }
   };
 
-  const isPaid = tier !== "free";
+  
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-10">
@@ -185,6 +186,34 @@ export function AccountSettings() {
                 </div>
               )}
 
+              {/* Billing toggle */}
+              {!isPaid && (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => setBilling("monthly")}
+                    className={cn(
+                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                      billing === "monthly"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBilling("yearly")}
+                    className={cn(
+                      "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                      billing === "yearly"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Annual (2 months free)
+                  </button>
+                </div>
+              )}
+
               {/* Pricing cards */}
               <div className="grid gap-4 md:grid-cols-3">
                 {(Object.entries(PLANS) as [Exclude<SubscriptionTier, "free">, typeof PLANS[keyof typeof PLANS]][]).map(([planKey, plan]) => {
@@ -218,8 +247,13 @@ export function AccountSettings() {
                       <div>
                         <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
                         <p className="font-display font-bold text-2xl text-foreground mt-1">
-                          {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                          {billing === "yearly" ? plan.priceMonthlyAnnual : plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
                         </p>
+                        {billing === "yearly" && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {plan.priceYearly} billed annually
+                          </p>
+                        )}
                       </div>
 
                       <ul className="space-y-2 text-sm">
@@ -240,7 +274,7 @@ export function AccountSettings() {
                           variant={isHighlighted ? "default" : "outline"}
                           size="sm"
                           className="w-full"
-                          onClick={() => startCheckout(plan.price_id).catch(() => toast.error("Failed to start checkout"))}
+                          onClick={() => startCheckout(billing === "yearly" ? plan.price_id_yearly : plan.price_id).catch(() => toast.error("Failed to start checkout"))}
                         >
                           Upgrade
                         </Button>
