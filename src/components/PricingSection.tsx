@@ -12,6 +12,7 @@ const plans = [
   {
     name: "Standard",
     price: "£10",
+    priceMonthlyAnnual: "£8.33",
     priceYearly: "£100",
     description: "For solo creators getting started",
     features: [
@@ -25,6 +26,7 @@ const plans = [
   {
     name: "Premium",
     price: "£20",
+    priceMonthlyAnnual: "£16.67",
     priceYearly: "£200",
     description: "For businesses that want it all",
     features: [
@@ -38,6 +40,7 @@ const plans = [
   {
     name: "Professional",
     price: "£30",
+    priceMonthlyAnnual: "£25",
     priceYearly: "£300",
     description: "For agencies & multi-brand teams",
     features: [
@@ -125,7 +128,7 @@ export function PricingSection({ onGetStarted }: PricingSectionProps) {
               </h3>
               <div className="mt-3 mb-1">
                 <span className="font-display text-4xl font-extrabold text-foreground">
-                  {plan.price}
+                  {billing === "yearly" ? plan.priceMonthlyAnnual : plan.price}
                 </span>
                 <span className="text-muted-foreground">/mo</span>
                 {billing === "yearly" && (

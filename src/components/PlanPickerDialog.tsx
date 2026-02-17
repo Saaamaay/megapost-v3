@@ -97,7 +97,7 @@ export function PlanPickerDialog({ open, onOpenChange, onSelectPlan }: PlanPicke
                 <div>
                   <h3 className="font-display font-bold text-foreground">{plan.name}</h3>
                   <p className="font-display font-bold text-2xl text-foreground mt-1">
-                    {plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    {billing === "yearly" ? plan.priceMonthlyAnnual : plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
                   </p>
                   {billing === "yearly" && (
                     <p className="text-xs text-muted-foreground mt-0.5">
