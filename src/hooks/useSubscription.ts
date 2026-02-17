@@ -7,9 +7,11 @@ export type SubscriptionTier = "free" | "standard" | "premium" | "professional";
 
 export interface PlanConfig {
   price_id: string;
+  price_id_yearly: string;
   product_id: string;
   name: string;
   price: string;
+  priceYearly: string;
   interval: string;
   maxProfiles: number;
   maxPlatforms: number;
@@ -18,27 +20,33 @@ export interface PlanConfig {
 export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
   standard: {
     price_id: "price_1T1COm2ScUqZEwlTbomy6Rpr",
+    price_id_yearly: "price_1T1rwH2ScUqZEwlTyMydYp0l",
     product_id: "prod_TzAkS4YF3ZUnGT",
     name: "Standard",
     price: "£10",
+    priceYearly: "£100",
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 1,
   },
   premium: {
     price_id: "price_1T1COl2ScUqZEwlTZQ7XI1Uh",
+    price_id_yearly: "price_1T1rw22ScUqZEwlT7Nfnxhiv",
     product_id: "prod_TzAkwUTiWivISB",
     name: "Premium",
     price: "£20",
+    priceYearly: "£200",
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 5,
   },
   professional: {
     price_id: "price_1T1COk2ScUqZEwlTFtUTJB93",
+    price_id_yearly: "price_1T1ruU2ScUqZEwlT3j9pEFA7",
     product_id: "prod_TzAkNtJcIQ8H9q",
     name: "Professional",
     price: "£30",
+    priceYearly: "£300",
     interval: "month",
     maxProfiles: 3,
     maxPlatforms: 5,
