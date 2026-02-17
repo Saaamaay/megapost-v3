@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -28,6 +30,26 @@ Deno.serve(async (req) => {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
+      );
+    }
+
+    // Use service role client to check/insert into welcome_emails_sent
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Idempotency: try to insert; if it already exists, skip
+    const { error: insertError } = await supabase
+      .from("welcome_emails_sent")
+      .insert({ email });
+
+    if (insertError) {
+      // Unique constraint violation = already sent
+      console.log("Welcome email already sent for:", email);
+      return new Response(
+        JSON.stringify({ success: true, alreadySent: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -63,15 +85,9 @@ Deno.serve(async (req) => {
           </tr>
           <tr>
             <td style="padding:40px;">
-              <p style="margin:0 0 20px;color:#1a1a2e;font-size:16px;line-height:1.6;">
-                Hey there! 👋
-              </p>
-              <p style="margin:0 0 20px;color:#374151;font-size:16px;line-height:1.6;">
-                Your account is all set up and ready to go. MegaPost helps you create engaging social media content that sounds exactly like you — powered by AI that learns your unique voice.
-              </p>
-              <p style="margin:0 0 24px;color:#374151;font-size:16px;line-height:1.6;">
-                Here's how to get started:
-              </p>
+              <p style="margin:0 0 20px;color:#1a1a2e;font-size:16px;line-height:1.6;">Hey there! 👋</p>
+              <p style="margin:0 0 20px;color:#374151;font-size:16px;line-height:1.6;">Your account is all set up and ready to go. MegaPost helps you create engaging social media content that sounds exactly like you — powered by AI that learns your unique voice.</p>
+              <p style="margin:0 0 24px;color:#374151;font-size:16px;line-height:1.6;">Here's how to get started:</p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                 <tr>
                   <td style="padding:12px 16px;background:#FEF7E8;border-radius:12px;border-left:3px solid #E89A0C;">
@@ -94,22 +110,16 @@ Deno.serve(async (req) => {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 24px;">
-                    <a href="https://megapost.ai" style="display:inline-block;background:linear-gradient(135deg,#E89A0C,#D97706);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:600;">
-                      Get Started →
-                    </a>
+                    <a href="https://megapost.ai" style="display:inline-block;background:linear-gradient(135deg,#E89A0C,#D97706);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:600;">Get Started →</a>
                   </td>
                 </tr>
               </table>
-              <p style="margin:0;color:#9ca3af;font-size:14px;line-height:1.5;">
-                If you have any questions, just reply to this email — we'd love to hear from you!
-              </p>
+              <p style="margin:0;color:#9ca3af;font-size:14px;line-height:1.5;">If you have any questions, just reply to this email — we'd love to hear from you!</p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #f3f4f6;text-align:center;">
-              <p style="margin:0;color:#9ca3af;font-size:13px;">
-                © ${new Date().getFullYear()} MegaPost · <a href="https://megapost.ai/privacy" style="color:#E89A0C;text-decoration:none;">Privacy</a>
-              </p>
+              <p style="margin:0;color:#9ca3af;font-size:13px;">© ${new Date().getFullYear()} MegaPost · <a href="https://megapost.ai/privacy" style="color:#E89A0C;text-decoration:none;">Privacy</a></p>
             </td>
           </tr>
         </table>
@@ -126,6 +136,8 @@ Deno.serve(async (req) => {
 
     if (!emailResponse.ok) {
       console.error("Resend error:", JSON.stringify(emailResult));
+      // Remove the DB record so it can retry
+      await supabase.from("welcome_emails_sent").delete().eq("email", email);
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: emailResult }),
         {
@@ -139,9 +151,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, messageId: emailResult.id }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error:", error.message);
