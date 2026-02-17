@@ -17,14 +17,16 @@ const authSchema = z.object({
 });
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const { signIn, signUp, user, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  // Check for ?mode=signup query param
+  const searchParams = new URLSearchParams(window.location.search);
+  const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  
-  const { signIn, signUp, user, loading } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = isLogin ? "Sign In — Megapost" : "Sign Up — Megapost";
