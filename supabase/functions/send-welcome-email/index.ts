@@ -1,9 +1,7 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -12,36 +10,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const payload = await req.json();
+    const { email } = await req.json();
 
-    // This is triggered by the auth webhook when a user confirms their email
-    // The payload contains the user record
-    const { type, record, old_record } = payload;
-
-    // Only send welcome email when email gets confirmed
-    // Check: user's email_confirmed_at changed from null to a value
-    if (type !== "UPDATE") {
-      return new Response(JSON.stringify({ message: "Not an update event" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const emailConfirmedNow = record?.email_confirmed_at;
-    const emailConfirmedBefore = old_record?.email_confirmed_at;
-
-    // Only trigger when email_confirmed_at transitions from null to a timestamp
-    if (!emailConfirmedNow || emailConfirmedBefore) {
-      return new Response(
-        JSON.stringify({ message: "Email not newly confirmed" }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const userEmail = record.email;
-    if (!userEmail) {
-      return new Response(JSON.stringify({ error: "No email found" }), {
+    if (!email) {
+      return new Response(JSON.stringify({ error: "No email provided" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -59,7 +31,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Send welcome email via Resend
+    console.log("Sending welcome email to:", email);
+
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -68,7 +41,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: "MegaPost <hello@megapost.ai>",
-        to: [userEmail],
+        to: [email],
         subject: "Welcome to MegaPost! 🚀",
         html: `
 <!DOCTYPE html>
@@ -82,13 +55,11 @@ Deno.serve(async (req) => {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
-          <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:40px 40px 32px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">Welcome to MegaPost! 🎉</h1>
             </td>
           </tr>
-          <!-- Body -->
           <tr>
             <td style="padding:40px;">
               <p style="margin:0 0 20px;color:#1a1a2e;font-size:16px;line-height:1.6;">
@@ -102,7 +73,7 @@ Deno.serve(async (req) => {
               </p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                 <tr>
-                  <td style="padding:12px 16px;background:#f3f4f6;border-radius:12px;margin-bottom:8px;">
+                  <td style="padding:12px 16px;background:#f3f4f6;border-radius:12px;">
                     <p style="margin:0;color:#1a1a2e;font-size:15px;"><strong>1.</strong> Set up your voice profile — tell us about your business and tone</p>
                   </td>
                 </tr>
@@ -119,7 +90,6 @@ Deno.serve(async (req) => {
                   </td>
                 </tr>
               </table>
-              <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 24px;">
@@ -134,7 +104,6 @@ Deno.serve(async (req) => {
               </p>
             </td>
           </tr>
-          <!-- Footer -->
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #f3f4f6;text-align:center;">
               <p style="margin:0;color:#9ca3af;font-size:13px;">
@@ -155,7 +124,7 @@ Deno.serve(async (req) => {
     const emailResult = await emailResponse.json();
 
     if (!emailResponse.ok) {
-      console.error("Resend error:", emailResult);
+      console.error("Resend error:", JSON.stringify(emailResult));
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: emailResult }),
         {
@@ -165,7 +134,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("Welcome email sent to:", userEmail);
+    console.log("Welcome email sent successfully, id:", emailResult.id);
 
     return new Response(
       JSON.stringify({ success: true, messageId: emailResult.id }),
@@ -174,7 +143,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

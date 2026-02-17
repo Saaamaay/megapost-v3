@@ -91,15 +91,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sendWelcomeEmail = async (email: string) => {
     try {
       const welcomed = localStorage.getItem(`megapost_welcomed_${email}`);
-      if (welcomed) return;
+      if (welcomed) {
+        console.log("Welcome email already sent for:", email);
+        return;
+      }
 
-      await supabase.functions.invoke("send-welcome-email", {
-        body: {
-          type: "UPDATE",
-          record: { email, email_confirmed_at: new Date().toISOString() },
-          old_record: { email, email_confirmed_at: null },
-        },
+      console.log("Sending welcome email for:", email);
+      const { data, error } = await supabase.functions.invoke("send-welcome-email", {
+        body: { email },
       });
+
+      if (error) {
+        console.error("Welcome email invoke error:", error);
+        return;
+      }
+
+      console.log("Welcome email result:", data);
       localStorage.setItem(`megapost_welcomed_${email}`, "true");
     } catch (err) {
       console.error("Welcome email error:", err);
