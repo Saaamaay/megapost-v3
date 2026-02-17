@@ -88,13 +88,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const welcomeEmailSending = new Set<string>();
+
   const sendWelcomeEmail = async (email: string) => {
     try {
+      // In-memory lock to prevent duplicate sends from concurrent auth events
+      if (welcomeEmailSending.has(email)) return;
+      welcomeEmailSending.add(email);
+
       const welcomed = localStorage.getItem(`megapost_welcomed_${email}`);
       if (welcomed) {
         console.log("Welcome email already sent for:", email);
+        welcomeEmailSending.delete(email);
         return;
       }
+
+      // Set flag BEFORE sending to prevent race conditions
+      localStorage.setItem(`megapost_welcomed_${email}`, "true");
 
       console.log("Sending welcome email for:", email);
       const { data, error } = await supabase.functions.invoke("send-welcome-email", {
@@ -103,13 +113,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("Welcome email invoke error:", error);
-        return;
+        // Remove flag so it can retry next time
+        localStorage.removeItem(`megapost_welcomed_${email}`);
+      } else {
+        console.log("Welcome email result:", data);
       }
-
-      console.log("Welcome email result:", data);
-      localStorage.setItem(`megapost_welcomed_${email}`, "true");
+      welcomeEmailSending.delete(email);
     } catch (err) {
       console.error("Welcome email error:", err);
+      localStorage.removeItem(`megapost_welcomed_${email}`);
+      welcomeEmailSending.delete(email);
     }
   };
 
