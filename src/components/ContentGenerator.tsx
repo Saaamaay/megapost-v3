@@ -353,7 +353,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    Free trial{trialDaysLeft !== null ? ` — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left` : ""}
+                    Free trial — {trialDaysLeft ?? 7} day{(trialDaysLeft ?? 7) !== 1 ? "s" : ""} left
                   </div>
                 </div>
                 <Progress value={trialDaysLeft !== null ? ((7 - trialDaysLeft) / 7) * 100 : 0} className="h-2" />
