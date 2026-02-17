@@ -11,6 +11,7 @@ export interface PlanConfig {
   product_id: string;
   name: string;
   price: string;
+  priceMonthlyAnnual: string;
   priceYearly: string;
   interval: string;
   maxProfiles: number;
@@ -24,6 +25,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     product_id: "prod_TzAkS4YF3ZUnGT",
     name: "Standard",
     price: "£10",
+    priceMonthlyAnnual: "£8.33",
     priceYearly: "£100",
     interval: "month",
     maxProfiles: 1,
@@ -35,6 +37,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     product_id: "prod_TzAkwUTiWivISB",
     name: "Premium",
     price: "£20",
+    priceMonthlyAnnual: "£16.67",
     priceYearly: "£200",
     interval: "month",
     maxProfiles: 1,
@@ -46,6 +49,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     product_id: "prod_TzAkNtJcIQ8H9q",
     name: "Professional",
     price: "£30",
+    priceMonthlyAnnual: "£25",
     priceYearly: "£300",
     interval: "month",
     maxProfiles: 3,
