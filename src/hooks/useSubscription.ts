@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -128,18 +128,7 @@ export function useSubscription() {
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
     : null;
 
-  // Track cancellation state changes and send email
-  const prevCancelRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    if (prevCancelRef.current === false && cancelAtPeriodEnd === true && session?.user?.email && tier !== "free") {
-      const planName = currentPlan?.name ?? "your";
-      const endDate = subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "end of period";
-      supabase.functions.invoke("send-subscription-email", {
-        body: { email: session.user.email, template: "subscription-cancelled", data: { planName, endDate } },
-      }).catch(() => {});
-    }
-    prevCancelRef.current = cancelAtPeriodEnd;
-  }, [cancelAtPeriodEnd, session?.user?.email, tier, currentPlan, subscriptionEnd]);
+  // Cancellation email paused — Stripe sends its own notification
 
   const checkSubscription = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["subscription"] });
