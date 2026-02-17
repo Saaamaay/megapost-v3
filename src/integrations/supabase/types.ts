@@ -183,6 +183,21 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_emails_sent: {
+        Row: {
+          email: string
+          sent_at: string
+        }
+        Insert: {
+          email: string
+          sent_at?: string
+        }
+        Update: {
+          email?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
