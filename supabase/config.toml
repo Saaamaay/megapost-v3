@@ -21,6 +21,12 @@ verify_jwt = false
 [functions.check-trial-expiring]
 verify_jwt = false
 
+[functions.admin-stats]
+verify_jwt = false
+
+[functions.seed-admin]
+verify_jwt = false
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
