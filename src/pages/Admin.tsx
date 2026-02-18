@@ -49,9 +49,9 @@ export default function Admin() {
       setLoading(true);
       setError(null);
       const { data, error: fnError } = await supabase.functions.invoke("admin-stats");
-      if (fnError) {
-        const msg = typeof fnError === "object" && "message" in fnError ? (fnError as any).message : String(fnError);
-        if (msg.includes("403") || msg.includes("Forbidden")) {
+      if (fnError || (data && data.error)) {
+        const msg = data?.error || (typeof fnError === "object" && "message" in (fnError as any) ? (fnError as any).message : String(fnError));
+        if (msg.includes("403") || msg.includes("Forbidden") || msg.includes("non-2xx")) {
           setError("You don't have admin access.");
         } else {
           setError(msg);
