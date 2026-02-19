@@ -92,8 +92,8 @@ serve(async (req) => {
       "prod_TzAkwUTiWivISB": 200,  // Premium
       "prod_TzAkNtJcIQ8H9q": 10000, // Professional (effectively unlimited)
     };
-    const ABUSE_CAP_MONTHLY = 500; // Hard abuse cap for all tiers
-    const ABUSE_CAP_DAILY = 50;    // Daily abuse cap (post rows)
+    const TRIAL_CAP = 25;             // Trial users
+    const ABUSE_CAP_DAILY = 50;        // Daily abuse cap (post rows)
     
     if (authHeader) {
       const { createClient: createAdminClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -105,8 +105,8 @@ serve(async (req) => {
       if (userId) {
         const userEmail = userData?.user?.email;
 
-        // Determine user's tier via Stripe
-        let monthlyGenerationCap = ABUSE_CAP_MONTHLY; // default abuse cap
+        // Determine user's tier via Stripe; default to trial cap for non-subscribers
+        let monthlyGenerationCap = TRIAL_CAP;
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
         if (stripeKey && userEmail) {
           try {
