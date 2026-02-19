@@ -30,7 +30,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig & { max
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 1,
-    maxGenerationsPerMonth: 200,
+    maxGenerationsPerMonth: 100,
   },
   premium: {
     price_id: "price_1T1COl2ScUqZEwlTZQ7XI1Uh",
@@ -43,7 +43,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig & { max
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 5,
-    maxGenerationsPerMonth: Infinity,
+    maxGenerationsPerMonth: 200,
   },
   professional: {
     price_id: "price_1T1COk2ScUqZEwlTFtUTJB93",
