@@ -148,12 +148,14 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const savePosts = async (generatedPosts: Record<Platform, string>, desc: string) => {
     if (!user) return;
 
+    const generationId = crypto.randomUUID();
     const postsToSave = Object.entries(generatedPosts).map(([platform, content]) => ({
       user_id: user.id,
       voice_profile_id: voiceProfile.id || null,
       platform,
       content,
       description: desc,
+      generation_id: generationId,
     }));
 
     const { error } = await supabase.from("generated_posts").insert(postsToSave);
@@ -174,6 +176,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
       platform,
       content,
       description: desc,
+      generation_id: crypto.randomUUID(),
     });
 
     if (error) {
