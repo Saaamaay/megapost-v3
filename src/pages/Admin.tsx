@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, CreditCard, TrendingUp, BarChart3, Loader2, ShieldAlert } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, CreditCard, TrendingUp, BarChart3, Loader2, ShieldAlert, Search } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface UserDetail {
@@ -18,6 +20,7 @@ interface UserDetail {
   has_subscription: boolean;
   subscription_tier: string | null;
   subscription_interval: string | null;
+  generation_count: number;
 }
 
 interface AdminStats {
@@ -31,12 +34,16 @@ interface AdminStats {
   users: UserDetail[];
 }
 
+type StatusFilter = "all" | "paid" | "trial" | "expired";
+
 export default function Admin() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,6 +71,19 @@ export default function Admin() {
 
     fetchStats();
   }, [user, authLoading, navigate]);
+
+  const filteredUsers = useMemo(() => {
+    if (!stats) return [];
+    return stats.users.filter((u) => {
+      const matchesSearch = !searchQuery || u.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "paid" && u.has_subscription) ||
+        (statusFilter === "trial" && u.is_trial_active) ||
+        (statusFilter === "expired" && !u.has_subscription && !u.is_trial_active);
+      return matchesSearch && matchesStatus;
+    });
+  }, [stats, searchQuery, statusFilter]);
 
   if (authLoading || loading) {
     return (
@@ -149,7 +169,7 @@ export default function Admin() {
         <Tabs defaultValue="chart">
           <TabsList>
             <TabsTrigger value="chart">Generations / Day</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="users">Users ({stats.users.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart">
@@ -169,7 +189,7 @@ export default function Admin() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No post data yet.</p>
+                  <p className="text-muted-foreground text-sm">No data yet.</p>
                 )}
               </CardContent>
             </Card>
@@ -179,6 +199,28 @@ export default function Admin() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">All Users</CardTitle>
+                <div className="flex flex-col sm:flex-row gap-3 pt-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by email..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                    <SelectTrigger className="w-full sm:w-[160px]">
+                      <SelectValue placeholder="Filter status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="trial">Trial</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -189,10 +231,11 @@ export default function Admin() {
                         <TableHead>Signed Up</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Plan</TableHead>
+                        <TableHead className="text-right">Generations</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {stats.users.map((u) => (
+                      {filteredUsers.map((u) => (
                         <TableRow key={u.id}>
                           <TableCell className="font-mono text-xs">{u.email}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">
@@ -212,11 +255,24 @@ export default function Admin() {
                               ? `${u.subscription_tier}${u.subscription_interval === "year" ? " (Annual)" : ""}`
                               : "—"}
                           </TableCell>
+                          <TableCell className="text-right text-xs font-medium">
+                            {u.generation_count}
+                          </TableCell>
                         </TableRow>
                       ))}
+                      {filteredUsers.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No users match your filters.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Showing {filteredUsers.length} of {stats.users.length} users
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

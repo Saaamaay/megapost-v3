@@ -141,7 +141,27 @@ serve(async (req) => {
         has_subscription: hasSubscription,
         subscription_tier: subscriptionTier,
         subscription_interval: subscriptionInterval,
+        generation_count: 0, // will be filled below
       });
+    }
+
+    // 2.5 Per-user generation counts (distinct generation_ids per user)
+    const { data: userGenData } = await serviceClient
+      .from("generated_posts")
+      .select("user_id, generation_id");
+
+    const userGenMap = new Map<string, Set<string>>();
+    const userNoGenIdCount = new Map<string, number>();
+    for (const row of userGenData ?? []) {
+      if (row.generation_id) {
+        if (!userGenMap.has(row.user_id)) userGenMap.set(row.user_id, new Set());
+        userGenMap.get(row.user_id)!.add(row.generation_id);
+      } else {
+        userNoGenIdCount.set(row.user_id, (userNoGenIdCount.get(row.user_id) ?? 0) + 1);
+      }
+    }
+    for (const ud of userDetails) {
+      ud.generation_count = (userGenMap.get(ud.id)?.size ?? 0) + (userNoGenIdCount.get(ud.id) ?? 0);
     }
 
     // 3. Generations per day (last 30 days) — count distinct generation_ids
