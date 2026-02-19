@@ -8,14 +8,14 @@ import { toast } from "sonner";
 
 const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }> = {
   standard: {
-    features: ["Unlimited post generation", "1 platform", "1 business profile", "Content pillars"],
+    features: ["200 generations/month", "1 platform", "1 business profile", "Content pillars"],
   },
   premium: {
-    features: ["Unlimited post generation", "All 5 platforms", "1 business profile", "Content pillars"],
+    features: ["Unlimited generations", "All 5 platforms", "1 business profile", "Content pillars"],
     highlight: true,
   },
   professional: {
-    features: ["Unlimited post generation", "All 5 platforms", "Up to 3 profiles", "Content pillars"],
+    features: ["Unlimited generations", "All 5 platforms", "Up to 3 profiles", "Content pillars"],
   },
 };
 

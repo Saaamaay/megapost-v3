@@ -88,9 +88,9 @@ serve(async (req) => {
 
     // Tier-based monthly generation limits (counted per generation action, not per platform output)
     const TIER_GENERATION_LIMITS: Record<string, number> = {
-      "prod_TzAkS4YF3ZUnGT": 100,  // Standard
-      "prod_TzAkwUTiWivISB": 200,  // Premium
-      "prod_TzAkNtJcIQ8H9q": 10000, // Professional (effectively unlimited)
+      "prod_TzAkS4YF3ZUnGT": 200,  // Standard
+      "prod_TzAkwUTiWivISB": 500,  // Premium (unlimited, abuse cap)
+      "prod_TzAkNtJcIQ8H9q": 500,  // Professional (unlimited, abuse cap)
     };
     const TRIAL_CAP = 25;             // Trial users
     const ABUSE_CAP_DAILY = 50;        // Daily abuse cap (post rows)
