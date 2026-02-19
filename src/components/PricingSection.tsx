@@ -16,7 +16,7 @@ const plans = [
     priceYearly: "£100",
     description: "For solo creators getting started",
     features: [
-      "200 generations/month",
+      "100 generations/month",
       "1 platform",
       "1 business profile",
       "Content pillars",
@@ -30,7 +30,7 @@ const plans = [
     priceYearly: "£200",
     description: "For businesses that want it all",
     features: [
-      "Unlimited generations",
+      "200 generations/month",
       "All 5 platforms",
       "1 business profile",
       "Content pillars",
