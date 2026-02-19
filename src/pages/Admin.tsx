@@ -130,7 +130,7 @@ export default function Admin() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Posts</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Generations</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -148,14 +148,14 @@ export default function Admin() {
 
         <Tabs defaultValue="chart">
           <TabsList>
-            <TabsTrigger value="chart">Posts / Day</TabsTrigger>
+            <TabsTrigger value="chart">Generations / Day</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Posts Generated (Last 14 Days)</CardTitle>
+                <CardTitle className="text-base">Generations (Last 14 Days)</CardTitle>
               </CardHeader>
               <CardContent>
                 {chartData.length > 0 ? (
