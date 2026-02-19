@@ -18,7 +18,7 @@ export interface PlanConfig {
   maxPlatforms: number;
 }
 
-export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
+export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig & { maxGenerationsPerMonth: number }> = {
   standard: {
     price_id: "price_1T1COm2ScUqZEwlTbomy6Rpr",
     price_id_yearly: "price_1T1rwH2ScUqZEwlTyMydYp0l",
@@ -30,6 +30,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 1,
+    maxGenerationsPerMonth: 100,
   },
   premium: {
     price_id: "price_1T1COl2ScUqZEwlTZQ7XI1Uh",
@@ -42,6 +43,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     interval: "month",
     maxProfiles: 1,
     maxPlatforms: 5,
+    maxGenerationsPerMonth: 200,
   },
   professional: {
     price_id: "price_1T1COk2ScUqZEwlTFtUTJB93",
@@ -54,6 +56,7 @@ export const PLANS: Record<Exclude<SubscriptionTier, "free">, PlanConfig> = {
     interval: "month",
     maxProfiles: 3,
     maxPlatforms: 5,
+    maxGenerationsPerMonth: Infinity,
   },
 } as const;
 

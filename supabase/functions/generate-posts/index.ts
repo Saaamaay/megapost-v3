@@ -85,6 +85,15 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Tier-based monthly generation limits (counted per generation action, not per platform output)
+    const TIER_GENERATION_LIMITS: Record<string, number> = {
+      "prod_TzAkS4YF3ZUnGT": 100,  // Standard
+      "prod_TzAkwUTiWivISB": 200,  // Premium
+      "prod_TzAkNtJcIQ8H9q": 10000, // Professional (effectively unlimited)
+    };
+    const ABUSE_CAP_MONTHLY = 500; // Hard abuse cap for all tiers
+    const ABUSE_CAP_DAILY = 50;    // Daily abuse cap (post rows)
     
     if (authHeader) {
       const { createClient: createAdminClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -94,22 +103,55 @@ serve(async (req) => {
       userId = userData?.user?.id || null;
 
       if (userId) {
-        // Monthly post cap: 500
+        const userEmail = userData?.user?.email;
+
+        // Determine user's tier via Stripe
+        let monthlyGenerationCap = ABUSE_CAP_MONTHLY; // default abuse cap
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (stripeKey && userEmail) {
+          try {
+            const Stripe = (await import("https://esm.sh/stripe@18.5.0")).default;
+            const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+            const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+            if (customers.data.length > 0) {
+              const subs = await stripe.subscriptions.list({
+                customer: customers.data[0].id,
+                status: "active",
+                limit: 1,
+              });
+              if (subs.data.length > 0) {
+                const productId = subs.data[0].items.data[0]?.price?.product as string;
+                if (TIER_GENERATION_LIMITS[productId] !== undefined) {
+                  monthlyGenerationCap = TIER_GENERATION_LIMITS[productId];
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Stripe tier check failed, using abuse cap:", e);
+          }
+        }
+
+        // Monthly generation cap: count distinct generation_ids (each = 1 generation action)
         const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        const { count: monthlyPosts } = await adminClient
-          .from("generated_posts")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .gte("created_at", monthAgo);
         
-        if ((monthlyPosts ?? 0) >= 500) {
-          return new Response(JSON.stringify({ error: "You've reached the monthly generation limit. Please try again next month or contact support." }), {
+        // Count distinct generation_ids for tier-based limit
+        const { data: genRows } = await adminClient
+          .from("generated_posts")
+          .select("generation_id")
+          .eq("user_id", userId)
+          .gte("created_at", monthAgo)
+          .not("generation_id", "is", null);
+
+        const uniqueGenerations = new Set((genRows ?? []).map((r: any) => r.generation_id)).size;
+
+        if (uniqueGenerations >= monthlyGenerationCap) {
+          return new Response(JSON.stringify({ error: "You've reached your monthly generation limit. Upgrade your plan for more generations." }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 429,
           });
         }
 
-        // Daily regeneration cap: 50
+        // Daily abuse cap (post rows, not generations)
         const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { count: dailyPosts } = await adminClient
           .from("generated_posts")
@@ -117,7 +159,7 @@ serve(async (req) => {
           .eq("user_id", userId)
           .gte("created_at", dayAgo);
         
-        if ((dailyPosts ?? 0) >= 50) {
+        if ((dailyPosts ?? 0) >= ABUSE_CAP_DAILY) {
           return new Response(JSON.stringify({ error: "You've reached the daily generation limit. Please try again tomorrow." }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 429,

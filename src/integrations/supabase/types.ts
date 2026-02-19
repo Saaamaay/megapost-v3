@@ -75,6 +75,7 @@ export type Database = {
           content: string
           created_at: string
           description: string | null
+          generation_id: string | null
           id: string
           image_url: string | null
           is_viral: boolean | null
@@ -88,6 +89,7 @@ export type Database = {
           content: string
           created_at?: string
           description?: string | null
+          generation_id?: string | null
           id?: string
           image_url?: string | null
           is_viral?: boolean | null
@@ -101,6 +103,7 @@ export type Database = {
           content?: string
           created_at?: string
           description?: string | null
+          generation_id?: string | null
           id?: string
           image_url?: string | null
           is_viral?: boolean | null
