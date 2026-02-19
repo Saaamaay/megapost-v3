@@ -144,24 +144,36 @@ serve(async (req) => {
       });
     }
 
-    // 3. Posts per day (last 30 days)
+    // 3. Generations per day (last 30 days) — count distinct generation_ids
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: postsData } = await serviceClient
       .from("generated_posts")
-      .select("created_at")
+      .select("created_at, generation_id")
       .gte("created_at", thirtyDaysAgo)
       .order("created_at", { ascending: true });
 
     const postsByDay: Record<string, number> = {};
+    const seenGenerations = new Set<string>();
     for (const post of postsData ?? []) {
       const day = post.created_at.substring(0, 10);
+      const gid = post.generation_id;
+      if (gid && seenGenerations.has(gid)) continue;
+      if (gid) seenGenerations.add(gid);
       postsByDay[day] = (postsByDay[day] ?? 0) + 1;
     }
 
-    // 4. Total posts
-    const { count: totalPosts } = await serviceClient
+    // 4. Total generations (distinct generation_ids + rows without one)
+    const { data: allGenData } = await serviceClient
       .from("generated_posts")
-      .select("id", { count: "exact", head: true });
+      .select("generation_id");
+
+    const allGens = new Set<string>();
+    let noGenIdCount = 0;
+    for (const row of allGenData ?? []) {
+      if (row.generation_id) allGens.add(row.generation_id);
+      else noGenIdCount++;
+    }
+    const totalPosts = allGens.size + noGenIdCount;
 
     // 5. Conversion rate
     const conversionRate = totalUsers > 0 ? ((paidUsers / totalUsers) * 100).toFixed(1) : "0";
