@@ -14,7 +14,15 @@ npm run test:watch   # Run tests in watch mode
 
 Tests use Vitest with jsdom environment and globals enabled (no need to import describe/it/expect). Test files go in `src/**/*.{test,spec}.{ts,tsx}`. Playwright is available for E2E tests.
 
-Supabase edge functions live in `supabase/functions/` and are written in Deno/TypeScript — they run on Supabase's infrastructure, not locally via npm.
+Supabase edge functions live in `supabase/functions/` and are written in Deno/TypeScript — they run on Supabase's infrastructure, not locally via npm. Deploy with `supabase functions deploy`.
+
+## Hosting & Infrastructure
+
+- **Frontend**: Hosted on Vercel, deployed from the `migrate-to-self-hosted` branch
+- **Backend**: Self-hosted Supabase project (`hikmqcmztoenkvxzoxjl`)
+- **Domain**: megapost.ai
+- **Edge functions**: All 12 deployed to Supabase with `verify_jwt = false` (functions handle their own auth)
+- **Secrets** (set via `supabase secrets set`): `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`
 
 ## Architecture
 
@@ -35,7 +43,7 @@ Supabase edge functions live in `supabase/functions/` and are written in Deno/Ty
   - `useSubscription` — calls `check-subscription` edge function, returns `tier` and `isPaid`
   - `usePostLimit` — enforces daily generation limits per subscription tier
   - `useContentPillars` — CRUD for brand content topics
-- **Integrations** (`src/integrations/`): Supabase client init and auto-generated DB types
+- **Integrations** (`src/integrations/supabase/`): Supabase client init and auto-generated DB types
 
 ### Backend (supabase/)
 
@@ -47,7 +55,7 @@ Edge functions handle server-side logic:
 - `admin-stats` — admin dashboard metrics
 - `delete-account`, `send-welcome-email`, `send-subscription-email`, `check-trial-expiring` — lifecycle functions
 
-Database migrations are in `supabase/migrations/`.
+Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
 
 ### Key Data Model
 
