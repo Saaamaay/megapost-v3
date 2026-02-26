@@ -24,6 +24,18 @@ verify_jwt = false
 [functions.admin-stats]
 verify_jwt = false
 
+[functions.generate-posts]
+verify_jwt = false
+
+[functions.generate-initial-pillars]
+verify_jwt = false
+
+[functions.generate-single-pillar]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
 
 
 
