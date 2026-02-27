@@ -70,6 +70,45 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_connections: {
+        Row: {
+          id: string
+          user_id: string
+          linkedin_person_id: string
+          linkedin_name: string | null
+          access_token: string
+          refresh_token: string | null
+          token_expires_at: string | null
+          refresh_token_expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          linkedin_person_id: string
+          linkedin_name?: string | null
+          access_token: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          refresh_token_expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          linkedin_person_id?: string
+          linkedin_name?: string | null
+          access_token?: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          refresh_token_expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       generated_posts: {
         Row: {
           content: string
@@ -79,6 +118,8 @@ export type Database = {
           id: string
           image_url: string | null
           is_viral: boolean | null
+          linkedin_post_url: string | null
+          linkedin_shared_at: string | null
           performance_notes: string | null
           platform: string
           rating: string | null
@@ -93,6 +134,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_viral?: boolean | null
+          linkedin_post_url?: string | null
+          linkedin_shared_at?: string | null
           performance_notes?: string | null
           platform: string
           rating?: string | null
@@ -107,6 +150,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_viral?: boolean | null
+          linkedin_post_url?: string | null
+          linkedin_shared_at?: string | null
           performance_notes?: string | null
           platform?: string
           rating?: string | null

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { History, Trash2, Copy, Check, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Flame } from "lucide-react";
+import { History, Trash2, Copy, Check, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Flame, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,8 @@ interface SavedPost {
   created_at: string;
   rating: string | null;
   is_viral: boolean | null;
+  linkedin_post_url: string | null;
+  linkedin_shared_at: string | null;
 }
 
 const platformColors: Record<string, string> = {
@@ -217,6 +219,17 @@ export function PostHistory() {
                           <span className="text-xs bg-amber-500/20 text-amber-600 px-2 py-0.5 rounded-full">
                             Needs work
                           </span>
+                        )}
+                        {post.linkedin_shared_at && (
+                          <a
+                            href={post.linkedin_post_url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs bg-[#0A66C2]/20 text-[#0A66C2] px-2 py-0.5 rounded-full hover:bg-[#0A66C2]/30 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Posted {formatDate(post.linkedin_shared_at)}
+                          </a>
                         )}
                       </div>
                       <p className="text-sm text-foreground/80 line-clamp-2">

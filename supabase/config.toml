@@ -36,6 +36,15 @@ verify_jwt = false
 [functions.delete-account]
 verify_jwt = false
 
+[functions.linkedin-connect]
+verify_jwt = false
+
+[functions.linkedin-disconnect]
+verify_jwt = false
+
+[functions.post-to-linkedin]
+verify_jwt = false
+
 
 
 

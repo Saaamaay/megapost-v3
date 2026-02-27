@@ -15,6 +15,7 @@ import { AccountSettings } from "@/components/AccountSettings";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useLinkedIn } from "@/hooks/useLinkedIn";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 
@@ -45,6 +46,7 @@ const Index = () => {
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const { user, loading, voiceProfile, allProfiles, signOut, saveVoiceProfile, deleteProfile } = useAuth();
   const { checkSubscription, tier, isPaid } = useSubscription();
+  const { handleOAuthCallback } = useLinkedIn();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -59,6 +61,18 @@ const Index = () => {
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, checkSubscription, setSearchParams]);
+
+  // Handle return from LinkedIn OAuth
+  useEffect(() => {
+    const linkedinCallback = searchParams.get("linkedin");
+    const code = searchParams.get("code");
+    const state = searchParams.get("state");
+
+    if (linkedinCallback === "callback" && code && state) {
+      setSearchParams({}, { replace: true });
+      handleOAuthCallback(code, state);
+    }
+  }, [searchParams, handleOAuthCallback, setSearchParams]);
 
   // Use saved profile if available
   const activeProfile = voiceProfile || localVoiceProfile;

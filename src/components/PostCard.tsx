@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Copy, Check, Linkedin, Instagram, Facebook, Twitter, RefreshCw, Loader2 } from "lucide-react";
+import { Copy, Check, Linkedin, Instagram, Facebook, Twitter, RefreshCw, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Platform } from "./PlatformSelector";
@@ -21,6 +21,10 @@ export interface PostCardProps {
   onRegenerate?: (platform: Platform) => Promise<void>;
   isRegenerating?: boolean;
   imageSrc?: string;
+  postId?: string;
+  linkedinSharedAt?: string | null;
+  onPostToLinkedIn?: (postId: string, content: string, imageBase64?: string) => Promise<void>;
+  isPostingToLinkedIn?: boolean;
 }
 
 const platformConfig: Record<Platform, {
@@ -67,7 +71,7 @@ const platformConfig: Record<Platform, {
   },
 };
 
-export function PostCard({ platform, content, format, index, onRegenerate, isRegenerating, imageSrc }: PostCardProps) {
+export function PostCard({ platform, content, format, index, onRegenerate, isRegenerating, imageSrc, postId, linkedinSharedAt, onPostToLinkedIn, isPostingToLinkedIn }: PostCardProps) {
   const [copied, setCopied] = useState(false);
   const config = platformConfig[platform];
   const Icon = config.icon;
@@ -150,6 +154,34 @@ export function PostCard({ platform, content, format, index, onRegenerate, isReg
               </>
             )}
           </motion.button>
+          {platform === "linkedin" && onPostToLinkedIn && postId && (
+            <motion.button
+              onClick={() => onPostToLinkedIn(postId, content, imageSrc)}
+              disabled={isPostingToLinkedIn || !!linkedinSharedAt}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                linkedinSharedAt
+                  ? "bg-green-500/20 text-green-600"
+                  : "bg-[#0A66C2] text-white hover:bg-[#0A66C2]/90 disabled:opacity-50"
+              )}
+            >
+              {isPostingToLinkedIn ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : linkedinSharedAt ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Posted
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Post
+                </>
+              )}
+            </motion.button>
+          )}
         </div>
       </div>
 

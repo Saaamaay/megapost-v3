@@ -21,8 +21,9 @@ Supabase edge functions live in `supabase/functions/` and are written in Deno/Ty
 - **Frontend**: Hosted on Vercel, deployed from the `migrate-to-self-hosted` branch
 - **Backend**: Self-hosted Supabase project (`hikmqcmztoenkvxzoxjl`)
 - **Domain**: megapost.ai
-- **Edge functions**: All 12 deployed to Supabase with `verify_jwt = false` (functions handle their own auth)
-- **Secrets** (set via `supabase secrets set`): `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`
+- **Edge functions**: All 15 deployed to Supabase with `verify_jwt = false` (functions handle their own auth)
+- **Secrets** (set via `supabase secrets set`): `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`
+- **Frontend env** (Vercel + `.env`): `VITE_LINKEDIN_CLIENT_ID` — needed for OAuth redirect
 
 ## Architecture
 
@@ -42,6 +43,7 @@ Supabase edge functions live in `supabase/functions/` and are written in Deno/Ty
   - `useAuth` — auth state, voice profile CRUD, profile switching. Exposes `VoiceProfile` interface.
   - `useSubscription` — calls `check-subscription` edge function, returns `tier` and `isPaid`
   - `usePostLimit` — enforces daily generation limits per subscription tier
+  - `useLinkedIn` — LinkedIn OAuth, connection status, direct posting
   - `useContentPillars` — CRUD for brand content topics
 - **Integrations** (`src/integrations/supabase/`): Supabase client init and auto-generated DB types
 
@@ -53,6 +55,9 @@ Edge functions handle server-side logic:
 - `generate-initial-pillars` / `generate-single-pillar` — AI-generated content pillars
 - `analyze-images` — image processing for post context
 - `admin-stats` — admin dashboard metrics
+- `linkedin-connect` — OAuth token exchange (code → tokens + profile, upserts linkedin_connections)
+- `linkedin-disconnect` — removes linkedin_connections row
+- `post-to-linkedin` — publishes text/image posts to LinkedIn, handles token refresh
 - `delete-account`, `send-welcome-email`, `send-subscription-email`, `check-trial-expiring` — lifecycle functions
 
 Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
@@ -60,7 +65,8 @@ Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
 ### Key Data Model
 
 - **voice_profiles** — user's AI voice settings (tone scales, business info, sample posts, brand beliefs)
-- **generated_posts** — history of AI-generated posts
+- **generated_posts** — history of AI-generated posts (includes `linkedin_post_url`, `linkedin_shared_at` for direct posting)
+- **linkedin_connections** — LinkedIn OAuth tokens (one per user, ON DELETE CASCADE)
 - **content_pillars** — user's brand topics/themes
 - **user_roles** — role-based access (admin)
 - **deleted_accounts** — hashed emails for trial abuse prevention

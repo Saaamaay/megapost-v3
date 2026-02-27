@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, Check, Crown } from "lucide-react";
+import { User, CreditCard, Bell, Trash2, Loader2, Mail, Lock, Check, Crown, Linkedin, Link2, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, PLANS, FREE_PLAN, type SubscriptionTier } from "@/hooks/useSubscription";
+import { useLinkedIn } from "@/hooks/useLinkedIn";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ const TIER_FEATURES: Record<string, { features: string[]; highlight?: boolean }>
 export function AccountSettings() {
   const { user, signOut } = useAuth();
   const { tier, isPaid, subscribed, subscriptionEnd, cancelAtPeriodEnd, loading: subLoading, startCheckout, openPortal } = useSubscription();
+  const { isConnected, linkedinName, loading: linkedinLoading, connectLinkedIn, disconnectLinkedIn } = useLinkedIn();
   const [newPassword, setNewPassword] = useState("");
   
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -142,6 +144,48 @@ export function AccountSettings() {
                 {isChangingPassword ? (<><Loader2 className="w-4 h-4 animate-spin" />Updating...</>) : "Update Password"}
               </Button>
             </div>
+          </div>
+        </section>
+
+        {/* Connected Accounts */}
+        <section className="bg-card rounded-2xl border border-border p-6 space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Link2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-lg text-foreground">Connected Accounts</h2>
+              <p className="text-muted-foreground text-sm">Link your social accounts to post directly</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-muted/30 border border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[#0A66C2]/10">
+                <Linkedin className="w-5 h-5 text-[#0A66C2]" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">LinkedIn</p>
+                {linkedinLoading ? (
+                  <p className="text-xs text-muted-foreground">Checking...</p>
+                ) : isConnected ? (
+                  <p className="text-xs text-muted-foreground">Connected as {linkedinName}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Not connected</p>
+                )}
+              </div>
+            </div>
+            {isConnected ? (
+              <Button variant="outline" size="sm" onClick={disconnectLinkedIn} className="gap-1.5">
+                <Unlink className="w-3.5 h-3.5" />
+                Disconnect
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={connectLinkedIn} className="gap-1.5" disabled={linkedinLoading}>
+                <Linkedin className="w-3.5 h-3.5" />
+                Connect
+              </Button>
+            )}
           </div>
         </section>
 

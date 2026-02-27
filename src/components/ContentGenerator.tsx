@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useContentPillars } from "@/hooks/useContentPillars";
 import { usePostLimit } from "@/hooks/usePostLimit";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useLinkedIn } from "@/hooks/useLinkedIn";
 import { toast } from "sonner";
 
 interface ToneScales {
@@ -56,10 +57,14 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
   const [placeholder, setPlaceholder] = useState("");
   const [lastDescription, setLastDescription] = useState("");
   const [showPlanPicker, setShowPlanPicker] = useState(false);
+  const [postIds, setPostIds] = useState<Record<Platform, string> | null>(null);
+  const [linkedinSharedAt, setLinkedinSharedAt] = useState<string | null>(null);
+  const [postingToLinkedIn, setPostingToLinkedIn] = useState(false);
   const { user } = useAuth();
   const { getPlaceholder } = useContentPillars();
   const { canGenerate: hasPostsLeft, isPro, loading: limitLoading } = usePostLimit();
   const { startCheckout, maxPlatforms, tier, trialExpired, trialDaysLeft, trialEndsAt } = useSubscription();
+  const { isConnected: linkedinConnected, connectLinkedIn, postToLinkedIn } = useLinkedIn();
   const { refetchVoiceProfile } = useAuth();
   const isStandardTier = tier === "standard";
 
@@ -145,25 +150,33 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
     );
   };
 
-  const savePosts = async (generatedPosts: Record<Platform, string>, desc: string) => {
-    if (!user) return;
+  const savePosts = async (generatedPosts: Record<Platform, string>, desc: string): Promise<Record<Platform, string> | null> => {
+    if (!user) return null;
 
     const generationId = crypto.randomUUID();
-    const postsToSave = Object.entries(generatedPosts).map(([platform, content]) => ({
+    const platformOrder = Object.keys(generatedPosts) as Platform[];
+    const postsToSave = platformOrder.map((platform) => ({
       user_id: user.id,
       voice_profile_id: voiceProfile.id || null,
       platform,
-      content,
+      content: generatedPosts[platform],
       description: desc,
       generation_id: generationId,
     }));
 
-    const { error } = await supabase.from("generated_posts").insert(postsToSave);
+    const { data, error } = await supabase.from("generated_posts").insert(postsToSave).select("id, platform");
 
     if (error) {
       console.error("Failed to save posts:", error);
+      return null;
     } else {
       setHistoryKey(prev => prev + 1);
+      // Build map of platform -> id
+      const idMap: Record<string, string> = {};
+      for (const row of data || []) {
+        idMap[row.platform] = row.id;
+      }
+      return idMap as Record<Platform, string>;
     }
   };
 
@@ -196,6 +209,8 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
     setIsGenerating(true);
     setPosts(null);
+    setPostIds(null);
+    setLinkedinSharedAt(null);
     setLastDescription(description);
 
     try {
@@ -243,8 +258,9 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           toast.success("Posts generated successfully!");
         }
         
-        await savePosts(generatedPosts, description);
-        
+        const ids = await savePosts(generatedPosts, description);
+        if (ids) setPostIds(ids);
+
       }
     } catch (error) {
       console.error("Failed to generate posts:", error);
@@ -298,6 +314,32 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setRegeneratingPlatform(null);
+    }
+  };
+
+  const handlePostToLinkedIn = async (postId: string, content: string, imageBase64?: string) => {
+    if (!linkedinConnected) {
+      connectLinkedIn();
+      return;
+    }
+
+    setPostingToLinkedIn(true);
+    try {
+      const result = await postToLinkedIn(postId, content, imageBase64);
+      if (result.success) {
+        toast.success("Posted to LinkedIn!");
+        setLinkedinSharedAt(new Date().toISOString());
+        setHistoryKey(prev => prev + 1);
+      } else if (result.error === "linkedin_reconnect_required") {
+        toast.error("LinkedIn session expired. Please reconnect.");
+        connectLinkedIn();
+      } else if (result.error === "linkedin_not_connected") {
+        connectLinkedIn();
+      } else {
+        toast.error(result.error || "Failed to post to LinkedIn");
+      }
+    } finally {
+      setPostingToLinkedIn(false);
     }
   };
 
@@ -526,6 +568,10 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
                     onRegenerate={handleRegenerate}
                     isRegenerating={regeneratingPlatform === platform}
                     imageSrc={getSelectedImage()}
+                    postId={postIds?.[platform]}
+                    linkedinSharedAt={platform === "linkedin" ? linkedinSharedAt : null}
+                    onPostToLinkedIn={platform === "linkedin" ? handlePostToLinkedIn : undefined}
+                    isPostingToLinkedIn={platform === "linkedin" ? postingToLinkedIn : false}
                   />
                 ))}
               </div>
