@@ -145,7 +145,7 @@ serve(async (req) => {
     const linkedinHeaders = {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
-      "LinkedIn-Version": "202401",
+      "LinkedIn-Version": "202602",
       "X-Restli-Protocol-Version": "2.0.0",
     };
 
