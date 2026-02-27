@@ -62,7 +62,9 @@ Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
 - **voice_profiles** — user's AI voice settings (tone scales, business info, sample posts, brand beliefs)
 - **generated_posts** — history of AI-generated posts
 - **content_pillars** — user's brand topics/themes
-- **profiles** — auth user profiles
+- **user_roles** — role-based access (admin)
+- **deleted_accounts** — hashed emails for trial abuse prevention
+- **welcome_emails_sent** — tracks onboarding email delivery
 
 ### Path Alias
 
@@ -74,7 +76,9 @@ Free tier: 3 posts/day. Paid tiers (Standard £10, Premium £20, Professional £
 
 ## Stack
 
-React 18 + TypeScript, Vite (SWC), Tailwind CSS, shadcn/ui (Radix), TanStack React Query, React Router DOM, Supabase JS, Stripe, Gemini AI API, Framer Motion, React Hook Form + Zod.
+**Frontend (npm):** React 18 + TypeScript, Vite (SWC), Tailwind CSS, shadcn/ui (Radix), TanStack React Query, React Router DOM, Supabase JS, Recharts, Framer Motion, React Hook Form + Zod.
+
+**Edge functions (Deno):** Stripe, Google Gemini AI, Resend (email). These are imported via ESM/npm in Deno, not in package.json.
 
 ## TypeScript Config
 
