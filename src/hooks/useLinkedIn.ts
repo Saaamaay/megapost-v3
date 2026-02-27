@@ -52,7 +52,7 @@ export function useLinkedIn() {
     const state = crypto.randomUUID();
     sessionStorage.setItem(STATE_KEY, state);
 
-    const redirectUri = `${window.location.origin}${REDIRECT_PATH}?linkedin=callback`;
+    const redirectUri = `${window.location.origin}${REDIRECT_PATH}`;
 
     const params = new URLSearchParams({
       response_type: "code",
@@ -75,7 +75,7 @@ export function useLinkedIn() {
       return false;
     }
 
-    const redirectUri = `${window.location.origin}${REDIRECT_PATH}?linkedin=callback`;
+    const redirectUri = `${window.location.origin}${REDIRECT_PATH}`;
 
     try {
       const { data, error } = await supabase.functions.invoke("linkedin-connect", {

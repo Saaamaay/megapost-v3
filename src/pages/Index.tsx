@@ -64,11 +64,11 @@ const Index = () => {
 
   // Handle return from LinkedIn OAuth
   useEffect(() => {
-    const linkedinCallback = searchParams.get("linkedin");
     const code = searchParams.get("code");
     const state = searchParams.get("state");
 
-    if (linkedinCallback === "callback" && code && state) {
+    // Distinguish from other OAuth flows by checking sessionStorage for our LinkedIn state
+    if (code && state && sessionStorage.getItem("linkedin_oauth_state")) {
       setSearchParams({}, { replace: true });
       handleOAuthCallback(code, state);
     }
