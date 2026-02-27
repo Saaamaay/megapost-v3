@@ -24,6 +24,7 @@ Supabase edge functions live in `supabase/functions/` and are written in Deno/Ty
 - **Edge functions**: All 15 deployed to Supabase with `verify_jwt = false` (functions handle their own auth)
 - **Secrets** (set via `supabase secrets set`): `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`
 - **Frontend env** (Vercel + `.env`): `VITE_LINKEDIN_CLIENT_ID` — needed for OAuth redirect
+- **LinkedIn Developer Portal**: redirect URI must be `https://www.megapost.ai/` (with `www` and trailing slash — must match `window.location.origin` exactly)
 
 ## Architecture
 
@@ -57,7 +58,7 @@ Edge functions handle server-side logic:
 - `admin-stats` — admin dashboard metrics
 - `linkedin-connect` — OAuth token exchange (code → tokens + profile, upserts linkedin_connections)
 - `linkedin-disconnect` — removes linkedin_connections row
-- `post-to-linkedin` — publishes text/image posts to LinkedIn, handles token refresh
+- `post-to-linkedin` — publishes text/image posts to LinkedIn, handles token refresh. Uses `LinkedIn-Version: 202602` header (versions expire yearly — update if LinkedIn returns `NONEXISTENT_VERSION`).
 - `delete-account`, `send-welcome-email`, `send-subscription-email`, `check-trial-expiring` — lifecycle functions
 
 Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
@@ -66,7 +67,7 @@ Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
 
 - **voice_profiles** — user's AI voice settings (tone scales, business info, sample posts, brand beliefs)
 - **generated_posts** — history of AI-generated posts (includes `linkedin_post_url`, `linkedin_shared_at` for direct posting)
-- **linkedin_connections** — LinkedIn OAuth tokens (one per user, ON DELETE CASCADE)
+- **linkedin_connections** — LinkedIn OAuth tokens (one per user, ON DELETE CASCADE). RLS: users can SELECT own row; writes via service role in edge functions.
 - **content_pillars** — user's brand topics/themes
 - **user_roles** — role-based access (admin)
 - **deleted_accounts** — hashed emails for trial abuse prevention
