@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 const LINKEDIN_SCOPES = "openid profile w_member_social";
 const REDIRECT_PATH = "/";
@@ -93,6 +94,7 @@ export function useLinkedIn() {
       }
 
       toast.success(`Connected as ${data.linkedinName}`);
+      analytics.linkedinConnected();
       queryClient.invalidateQueries({ queryKey: ["linkedin-connection"] });
       return true;
     } catch {
@@ -135,6 +137,7 @@ export function useLinkedIn() {
         return { success: false, error: data.error };
       }
 
+      analytics.linkedinPosted();
       return { success: true, postUrl: data.postUrl };
     } catch {
       return { success: false, error: "Failed to post to LinkedIn" };

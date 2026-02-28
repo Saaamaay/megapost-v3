@@ -16,6 +16,7 @@ import { usePostLimit } from "@/hooks/usePostLimit";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useLinkedIn } from "@/hooks/useLinkedIn";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 interface ToneScales {
   casualProfessional: number;
@@ -168,6 +169,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
     if (error) {
       console.error("Failed to save posts:", error);
+      toast.error("Posts generated but couldn't be saved to history.");
       return null;
     } else {
       setHistoryKey(prev => prev + 1);
@@ -194,6 +196,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
 
     if (error) {
       console.error("Failed to save post:", error);
+      toast.error("Post regenerated but couldn't be saved to history.");
     } else {
       setHistoryKey(prev => prev + 1);
     }
@@ -258,6 +261,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           toast.success("Posts generated successfully!");
         }
         
+        analytics.postsGenerated(platforms);
         const ids = await savePosts(generatedPosts, description);
         if (ids) setPostIds(ids);
 
@@ -520,6 +524,7 @@ export function ContentGenerator({ voiceProfile }: ContentGeneratorProps) {
           </div>
 
           <Button
+            data-testid="generate-button"
             variant="hero"
             size="xl"
             onClick={handleGenerate}

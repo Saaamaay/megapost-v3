@@ -16,8 +16,10 @@ import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useLinkedIn } from "@/hooks/useLinkedIn";
+import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 interface ToneScales {
   casualProfessional: number;
@@ -55,6 +57,7 @@ const Index = () => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success") {
       checkSubscription();
+      analytics.subscriptionStarted(tier);
       toast.success("Welcome! Your subscription is now active.");
       setSearchParams({}, { replace: true });
     } else if (checkout === "cancelled") {
@@ -85,6 +88,7 @@ const Index = () => {
       if (error) {
         toast.error("Failed to save voice profile");
       } else {
+        if (!isEdit) analytics.voiceProfileCreated();
         toast.success(isEdit ? "Voice profile updated!" : "Voice profile saved!");
       }
     }
@@ -184,7 +188,9 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <NavBar onNavigate={handleNavigate} currentView="generator" onAddNewBusiness={handleAddNewBusiness} />
-        <ContentGenerator key={voiceProfile?.id} voiceProfile={activeProfile} />
+        <FeatureErrorBoundary>
+          <ContentGenerator key={voiceProfile?.id} voiceProfile={activeProfile} />
+        </FeatureErrorBoundary>
       </div>
     );
   }

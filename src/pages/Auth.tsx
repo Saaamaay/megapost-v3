@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import { analytics } from "@/lib/analytics";
 
 const authSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address"),
@@ -86,6 +87,7 @@ export default function Auth() {
             toast.error(error.message);
           }
         } else {
+          analytics.signUp();
           toast.success("Check your email to confirm your account before signing in!", { duration: 6000 });
           setIsLogin(true);
           setEmail("");

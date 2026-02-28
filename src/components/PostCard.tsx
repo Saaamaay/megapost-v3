@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Copy, Check, Linkedin, Instagram, Facebook, Twitter, RefreshCw, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 import type { Platform } from "./PlatformSelector";
 import { Badge } from "@/components/ui/badge";
 import { CroppedImagePreview } from "./CroppedImagePreview";
@@ -78,6 +79,7 @@ export function PostCard({ platform, content, format, index, onRegenerate, isReg
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content);
+    analytics.postCopied(platform);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -90,6 +92,7 @@ export function PostCard({ platform, content, format, index, onRegenerate, isReg
 
   return (
     <motion.div
+      data-testid={`post-card-${platform}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}

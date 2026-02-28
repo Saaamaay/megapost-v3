@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { posthog } from "@/lib/posthog";
 
 interface ToneScales {
   casualProfessional: number;
@@ -113,6 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchVoiceProfiles(session.user.id);
           }, 0);
 
+          // Identify user in PostHog
+          posthog.identify(session.user.id, { email: session.user.email });
+
           // Send welcome email on first sign in
           if (event === "SIGNED_IN" && session.user.email) {
             sendWelcomeEmail(session.user.email);
@@ -160,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    posthog.reset();
     setVoiceProfile(null);
     setAllProfiles([]);
   };

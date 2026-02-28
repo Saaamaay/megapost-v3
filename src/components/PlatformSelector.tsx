@@ -82,7 +82,7 @@ export function PlatformSelector({ selected, onToggle, maxPlatforms = 5, lockedP
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3" data-testid="platform-selector">
           {platforms.map((platform) => {
             const isSelected = selected.includes(platform.id);
             const isLockedToThis = lockedPlatform === platform.id;
@@ -94,6 +94,7 @@ export function PlatformSelector({ selected, onToggle, maxPlatforms = 5, lockedP
               <Tooltip key={platform.id}>
                 <TooltipTrigger asChild>
                   <motion.button
+                    data-testid={`platform-${platform.id}`}
                     onClick={() => !disabled && onToggle(platform.id)}
                     whileHover={disabled ? {} : { scale: 1.02 }}
                     whileTap={disabled ? {} : { scale: 0.98 }}
