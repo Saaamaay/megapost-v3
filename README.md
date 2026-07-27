@@ -4,7 +4,7 @@ AI-powered social post generator that writes in **your brand voice** — not gen
 
 Users build a voice profile (tone sliders, sample posts, brand beliefs, content pillars), then generate platform-specific posts from a short description and optional image. Full SaaS wrapper: free trial, three paid tiers via Stripe, one-click direct publishing to LinkedIn, admin dashboard.
 
-> **Status:** working application, built January–February 2026 (~340 commits), developed with Claude Code. Not currently hosted — see the demo below, or run it locally in two minutes.
+> **Status:** working application, built January–February 2026 (~340 commits), developed with Claude Code. Not currently hosted — the demo below shows it running against the live backend.
 
 ## Demo
 
@@ -42,13 +42,15 @@ Secrets (Gemini, Stripe, Resend, LinkedIn) live exclusively in Supabase's secret
 
 ## Run locally
 
+The frontend runs against any Supabase project — full setup means standing up your own backend:
+
 ```bash
 npm install
-cp .env.example .env   # add your Supabase project values
+cp .env.example .env   # your Supabase project's publishable values
 npm run dev            # http://localhost:8080
 ```
 
-Backend requires a Supabase project with the migrations applied (`supabase db push`) and edge functions deployed (`supabase functions deploy`).
+Then, on your Supabase project: apply the migrations (`supabase db push`), deploy the edge functions (`supabase functions deploy`), and set the server-side secrets (`supabase secrets set GEMINI_API_KEY=...` etc.). Sign-up, generation and billing all run through that backend, so nothing works without it — the demo GIF above is the quickest way to see the app in action.
 
 ## Tests
 
