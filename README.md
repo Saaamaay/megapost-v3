@@ -1,6 +1,6 @@
 # Megapost
 
-AI-powered social post generator that writes in **your brand voice** — not generic LLM voice.
+AI-powered social post generator that writes in **your unique brand voice** .
 
 Users build a voice profile (tone sliders, sample posts, brand beliefs, content pillars), then generate platform-specific posts from a short description and optional image. Full SaaS wrapper: free trial, three paid tiers via Stripe, one-click direct publishing to LinkedIn, admin dashboard.
 
@@ -61,4 +61,4 @@ npx playwright test    # E2E scaffolding (needs a dedicated test account)
 
 ## History
 
-Started as a Lovable prototype, then migrated to a self-hosted Supabase stack (`migrate-to-self-hosted` branch — the deployed line): custom edge functions, CI/CD, monitoring, tests, and LinkedIn integration were all added post-migration. Previously live at megapost.ai.
+Started as a Lovable prototype, then migrated to a self-hosted Supabase stack (`migrate-to-self-hosted` branch — the deployed line): custom edge functions, CI/CD, monitoring, tests, and LinkedIn integration were all added post-migration. 
