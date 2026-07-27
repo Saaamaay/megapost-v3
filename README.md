@@ -8,7 +8,9 @@ Users build a voice profile (tone sliders, sample posts, brand beliefs, content 
 
 ## Demo
 
-<!-- TODO: demo.gif — record: sign in → voice profile → generate posts → copy/post -->
+![Megapost demo — voice profile → generate → platform-tailored posts](docs/megapost_demo.gif)
+
+*One description in, three platform-tailored posts out — LinkedIn long-form, Instagram caption with hashtags, X short-form — all in the saved brand voice.*
 
 ## Features
 
