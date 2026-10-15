@@ -5,13 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # Start dev server on localhost:8080
-npm run build        # Production build
 npm run lint         # ESLint check (pre-existing errors — not blocking)
-npm test             # Run unit tests once (vitest)
-npm run test:watch   # Run tests in watch mode
 npx playwright test  # E2E tests (needs dev server + E2E_TEST_EMAIL/PASSWORD env vars)
 ```
+
+Other scripts (`dev`, `build`, `test`, `test:watch`) are in `package.json`.
 
 Tests use Vitest with jsdom environment and globals enabled (no need to import describe/it/expect). Test files go in `src/**/*.{test,spec}.{ts,tsx}`. Playwright E2E tests go in `e2e/`.
 
@@ -36,38 +34,11 @@ Supabase edge functions live in `supabase/functions/` and are written in Deno/Ty
 
 ### Frontend (src/)
 
-- **Pages** (`src/pages/`): Route-level components — Index (main dashboard), Auth, Admin, Privacy, Terms
-- **Components** (`src/components/`): App-specific UI. Key ones:
-  - `VoiceSetup` — voice profile creation (tone sliders, sample posts, brand beliefs)
-  - `ContentGenerator` — main post generation flow (platform + description + image → AI posts)
-  - `PostCard` / `PostHistory` — display and browse generated posts
-  - `BusinessSwitcher` — multi-profile switching
-  - `AccountSettings` — billing/subscription management via Stripe
-  - `ErrorBoundary` — full-page error boundary (wraps router in App.tsx, reports to Sentry)
-  - `FeatureErrorBoundary` — inline error boundary (wraps ContentGenerator in Index.tsx)
-- **components/ui/** — shadcn/ui primitives (Radix-based). Configured in `components.json`.
-- **Hooks** (`src/hooks/`):
-  - `useAuth` — auth state, voice profile CRUD, profile switching. Identifies users in PostHog.
-  - `useSubscription` — calls `check-subscription` edge function, returns `tier` and `isPaid`
-  - `usePostLimit` — enforces generation limits per subscription tier
-  - `useLinkedIn` — LinkedIn OAuth, connection status, direct posting
-  - `useContentPillars` — CRUD for brand content topics
-- **Lib** (`src/lib/`):
-  - `sentry.ts` — Sentry init (no-ops without DSN)
-  - `posthog.ts` — PostHog init (no-ops without key, EU host)
-  - `analytics.ts` — typed event helpers: `signUp`, `postsGenerated`, `postCopied`, `linkedinConnected`, `linkedinPosted`, `subscriptionStarted`, `voiceProfileCreated`
-  - `utils.ts` — Tailwind `cn()` helper
-- **Integrations** (`src/integrations/supabase/`): Supabase client init and auto-generated DB types
+Standard Vite/React layout: `pages/`, `components/` (with `components/ui/` holding shadcn/ui Radix primitives), `hooks/`, `lib/`, `integrations/supabase/`. Sentry and PostHog init in `lib/` both no-op when their env keys are absent, so local dev doesn't need them.
 
 ### Testing (src/test/)
 
-- **Setup** (`src/test/setup.ts`): jest-dom matchers, `crypto.randomUUID` polyfill, env var stubs
-- **Mocks** (`src/test/mocks/`):
-  - `supabase.ts` — module-level mock of `@/integrations/supabase/client` with chainable `.from()` builder
-  - `factories.ts` — `createMockUser`, `createMockSession`, `createMockVoiceProfile`, `createMockSubscriptionData`, `createMockLinkedInConnection`, `createMockContentPillar`
-- **Wrappers** (`src/test/wrappers.tsx`): `QueryClientWrapper`, `AuthProviderWrapper`, `AllProvidersWrapper` for `renderHook`
-- **Hook tests**: co-located with hooks (`src/hooks/*.test.{ts,tsx}`) — 32 tests total
-- **E2E tests** (`e2e/`): Playwright specs for auth and generation flows. Require `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` env vars pointing to a dedicated Supabase test account.
+Hook tests are co-located with the hooks (`src/hooks/*.test.{ts,tsx}`); shared setup, mocks, and provider wrappers live in `src/test/`. E2E specs in `e2e/` require `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` pointing to a dedicated Supabase test account.
 
 ### Backend (supabase/)
 
@@ -96,7 +67,7 @@ Database migrations are in `supabase/migrations/`. Push with `supabase db push`.
 
 ### Path Alias
 
-`@/` maps to `./src/` (configured in tsconfig.json, vite.config.ts, and vitest.config.ts). Always use `@/` imports.
+Always use `@/` imports (maps to `./src/`).
 
 ### Subscription Tiers
 
@@ -104,11 +75,7 @@ Free tier: 7-day trial with Premium-level access. Paid tiers (Standard £10, Pre
 
 ## Stack
 
-**Frontend (npm):** React 18 + TypeScript, Vite (SWC), Tailwind CSS, shadcn/ui (Radix), TanStack React Query, React Router DOM, Supabase JS, Sentry, PostHog, Recharts, Framer Motion, React Hook Form + Zod.
-
-**Testing:** Vitest, Testing Library (React), Playwright (E2E).
-
-**Edge functions (Deno):** Stripe, Google Gemini AI, Resend (email). These are imported via ESM/npm in Deno, not in package.json.
+Frontend deps are in `package.json`. Edge-function deps (Stripe, Google Gemini AI, Resend) are **not** — Deno imports them via ESM/npm URLs inside `supabase/functions/`.
 
 ## TypeScript Config
 
